@@ -18,6 +18,9 @@ with a CB Bank-inspired theme.
 
 ```
 EMS.sln
+db/
+  schema.sql          Full SQL Server DDL script generated from the EF Core migration
+  README.md           What it creates and how to (re)generate/apply it
 src/
   EMS.Domain          Entities, enums, bonus/dividend calculation formulas (no framework dependencies)
   EMS.Application     Service interfaces, DTOs, the generic approval-workflow contract
@@ -60,6 +63,9 @@ checked in under `src/EMS.Infrastructure/Persistence/Migrations`:
 dotnet tool install --global dotnet-ef
 dotnet ef database update --project src/EMS.Infrastructure --startup-project src/EMS.Infrastructure
 ```
+
+If you'd rather hand a DBA a plain script instead of running `dotnet ef` against the target
+server, use `db/schema.sql` (same migration, pre-rendered to idempotent T-SQL — see `db/README.md`).
 
 Production/UAT/SIT should always run against SQL Server, per the functional spec; SQLite is a
 local-development convenience only (and does not participate in the same migration history —
