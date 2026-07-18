@@ -1,0 +1,281 @@
+@model DashboardViewData
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Breadcrumb"] = new List<(string, string?)> { ("Dashboard", null) };
+
+    string J(object o) => JsonSerializer.Serialize(o);
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-4 gap-2">
+    <div>
+        <h1 class="h3 mb-1">Good day, @User.Identity!.Name</h1>
+        <p class="text-secondary-cb mb-0">Investor Relations overview &middot; Data as of @Model.DataAsOfUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</p>
+    </div>
+    <form method="get" class="d-flex gap-2">
+        <input type="date" name="asOf" class="form-select form-select-sm" style="min-height:auto;" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")" />
+        <button type="submit" class="btn btn-cb-outline btn-sm"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    </form>
+</div>
+
+<div class="cb-kpi-row">
+    <div class="cb-card cb-card--kpi highlight">
+        <span class="cb-kpi-icon"><i class="bi bi-people"></i></span>
+        <span class="text-secondary-cb small">Registered shareholders</span>
+        <span class="cb-kpi-value">@Model.Kpis.RegisteredShareholders.ToString("N0")</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-graph-up"></i></span>
+        <span class="text-secondary-cb small">Total shares</span>
+        <span class="cb-kpi-value">@Model.Kpis.TotalShares.ToString("N0")</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-cash-coin"></i></span>
+        <span class="text-secondary-cb small">Paid-up capital</span>
+        <span class="cb-kpi-value">MMK @((Model.Kpis.PaidUpCapital / 1_000_000m).ToString("N1"))M</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-clock-history"></i></span>
+        <span class="text-secondary-cb small">Pending approvals</span>
+        <span class="cb-kpi-value">@Model.Kpis.PendingApprovals</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-percent"></i></span>
+        <span class="text-secondary-cb small">Dividend provision</span>
+        <span class="cb-kpi-value">MMK @((Model.Kpis.DividendProvisionCurrentYear / 1_000_000m).ToString("N1"))M</span>
+    </div>
+</div>
+
+<div class="cb-widget-grid">
+    <div class="cb-card cb-widget-card">
+        <h3>Shareholding by group</h3>
+        <div class="cb-widget-meta">DB-01 &middot; number of shares &middot; <a asp-controller="Reports" asp-action="Run" asp-route-code="RPT-002">View data</a></div>
+        @if (Model.ShareholdingByGroup.Count == 0)
+        {
+            <p class="cb-empty-state mb-0">No data available for the selected filters.</p>
+        }
+        else
+        {
+            <div class="cb-widget-canvas-wrap"><canvas id="chartByGroup"></canvas></div>
+        }
+    </div>
+
+    <div class="cb-card cb-widget-card">
+        <h3>Shareholding by group (%)</h3>
+        <div class="cb-widget-meta">DB-02 &middot; percentage of total issued shares</div>
+        @if (Model.ShareholdingByGroup.Count == 0)
+        {
+            <p class="cb-empty-state mb-0">No data available for the selected filters.</p>
+        }
+        else
+        {
+            <div class="cb-widget-canvas-wrap"><canvas id="chartByGroupPct"></canvas></div>
+        }
+    </div>
+
+    <div class="cb-card cb-widget-card">
+        <h3>Yearly paid-up capital</h3>
+        <div class="cb-widget-meta">DB-03 &middot; MMK million &middot; <a asp-controller="Reports" asp-action="Run" asp-route-code="RPT-004">View data</a></div>
+        @if (Model.YearlyPaidUpCapital.Count == 0)
+        {
+            <p class="cb-empty-state mb-0">No data available for the selected filters.</p>
+        }
+        else
+        {
+            <div class="cb-widget-canvas-wrap"><canvas id="chartCapital"></canvas></div>
+        }
+    </div>
+
+    <div class="cb-card cb-widget-card">
+        <h3>Yearly dividend % and provision</h3>
+        <div class="cb-widget-meta">DB-04 &middot; <a asp-controller="Reports" asp-action="Run" asp-route-code="RPT-008">View data</a></div>
+        @if (Model.YearlyDividend.Count == 0)
+        {
+            <p class="cb-empty-state mb-0">No data available for the selected filters.</p>
+        }
+        else
+        {
+            <div class="cb-widget-canvas-wrap"><canvas id="chartDividend"></canvas></div>
+        }
+    </div>
+
+    <div class="cb-card cb-widget-card" style="grid-column: span 2;">
+        <h3>Dividend comparison</h3>
+        <div class="cb-widget-meta">DB-05 &middot; cash / transfer / reinvested / outstanding by year</div>
+        @if (Model.DividendComparison.Count == 0)
+        {
+            <p class="cb-empty-state mb-0">No data available for the selected filters.</p>
+        }
+        else
+        {
+            <div class="cb-widget-canvas-wrap"><canvas id="chartDividendComparison"></canvas></div>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="cb-card">
+            <h3 class="h6">My pending approvals</h3>
+            @if (Model.MyPendingApprovals.Count == 0)
+            {
+                <p class="text-secondary-cb small mb-0">Nothing waiting on you right now.</p>
+            }
+            else
+            {
+                <div class="cb-table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Reference</th><th>Module</th><th>Submitted by</th><th>Step</th><th></th></tr></thead>
+                        <tbody>
+                        @foreach (var item in Model.MyPendingApprovals)
+                        {
+                            <tr>
+                                <td>@item.Reference</td>
+                                <td>@item.Module</td>
+                                <td>@item.SubmittedBy</td>
+                                <td>@item.StepName</td>
+                                <td><a class="btn btn-cb-outline btn-sm" asp-controller="Approvals" asp-action="Review" asp-route-id="@item.ApprovalStepId">Review</a></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            <a class="small" asp-controller="Approvals" asp-action="Index">View all pending approvals &rarr;</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="cb-card">
+            <h3 class="h6">Recent transactions</h3>
+            @if (Model.RecentTransactions.Count == 0)
+            {
+                <p class="text-secondary-cb small mb-0">No transactions posted yet.</p>
+            }
+            else
+            {
+                <div class="cb-table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Reference</th><th>Module</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                        @foreach (var item in Model.RecentTransactions)
+                        {
+                            <tr>
+                                <td>@item.Reference</td>
+                                <td>@item.Module</td>
+                                <td><partial name="_StatusBadge" model="@item.Status" /></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <div class="cb-card d-flex justify-content-between align-items-center">
+            <div>
+                <div class="text-secondary-cb small">Pending KYC</div>
+                <div class="fw-bold fs-5">@Model.PendingKycCount</div>
+            </div>
+            <a class="btn btn-cb-outline btn-sm" asp-controller="Kyc" asp-action="Index">Open KYC queue</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="cb-card d-flex justify-content-between align-items-center">
+            <div>
+                <div class="text-secondary-cb small">Data quality exceptions</div>
+                <div class="fw-bold fs-5">@Model.DataQualityExceptionCount</div>
+            </div>
+            @if (Model.DataQualityExceptionCount > 0)
+            {
+                <span class="cb-badge cb-badge-rejected">Needs attention</span>
+            }
+            else
+            {
+                <span class="cb-badge cb-badge-approved">Clean</span>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    Chart.defaults.color = '#5F7082';
+    Chart.defaults.font.family = "Inter, 'Noto Sans Myanmar', 'Segoe UI', Arial, sans-serif";
+    const cbTheme = { primary: '#004A8F', secondary: '#FDBB30', success: '#39B972', danger: '#EF4F5F', accent: '#2855A5', grid: '#D9E1EA' };
+
+    @if (Model.ShareholdingByGroup.Count > 0)
+    {
+        <text>
+        new Chart(document.getElementById('chartByGroup'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(J(Model.ShareholdingByGroup.Select(g => g.GroupName))),
+                datasets: [{ label: 'Shares', data: @Html.Raw(J(Model.ShareholdingByGroup.Select(g => g.Shares))), backgroundColor: cbTheme.primary }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: cbTheme.grid } }, x: { grid: { display: false } } } }
+        });
+        new Chart(document.getElementById('chartByGroupPct'), {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(J(Model.ShareholdingByGroup.Select(g => $"{g.GroupName} ({g.Percentage:0.00}%)"))),
+                datasets: [{ data: @Html.Raw(J(Model.ShareholdingByGroup.Select(g => g.Percentage))), backgroundColor: [cbTheme.primary, cbTheme.secondary, cbTheme.success, cbTheme.danger, cbTheme.accent, '#7B61A8'] }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+        </text>
+    }
+
+    @if (Model.YearlyPaidUpCapital.Count > 0)
+    {
+        <text>
+        new Chart(document.getElementById('chartCapital'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(J(Model.YearlyPaidUpCapital.Select(y => y.FinancialYear))),
+                datasets: [{ label: 'Closing paid-up capital (MMK)', data: @Html.Raw(J(Model.YearlyPaidUpCapital.Select(y => y.ClosingPaidUpCapital))), borderColor: cbTheme.primary, backgroundColor: cbTheme.primary, tension: 0.25 }]
+            },
+            options: { scales: { y: { grid: { color: cbTheme.grid } }, x: { grid: { display: false } } } }
+        });
+        </text>
+    }
+
+    @if (Model.YearlyDividend.Count > 0)
+    {
+        <text>
+        new Chart(document.getElementById('chartDividend'), {
+            data: {
+                labels: @Html.Raw(J(Model.YearlyDividend.Select(y => y.FinancialYear))),
+                datasets: [
+                    { type: 'bar', label: 'Provision (MMK)', data: @Html.Raw(J(Model.YearlyDividend.Select(y => y.ProvisionAmount))), backgroundColor: cbTheme.secondary, yAxisID: 'y' },
+                    { type: 'line', label: 'Dividend %', data: @Html.Raw(J(Model.YearlyDividend.Select(y => y.DividendPercentage))), borderColor: cbTheme.primary, yAxisID: 'y1' }
+                ]
+            },
+            options: { scales: { y: { position: 'left', grid: { color: cbTheme.grid } }, y1: { position: 'right', grid: { display: false } } } }
+        });
+        </text>
+    }
+
+    @if (Model.DividendComparison.Count > 0)
+    {
+        <text>
+        new Chart(document.getElementById('chartDividendComparison'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(J(Model.DividendComparison.Select(y => y.FinancialYear))),
+                datasets: [
+                    { label: 'Cash withdrawal', data: @Html.Raw(J(Model.DividendComparison.Select(y => y.CashWithdrawal))), backgroundColor: cbTheme.primary },
+                    { label: 'Account transfer', data: @Html.Raw(J(Model.DividendComparison.Select(y => y.AccountTransfer))), backgroundColor: cbTheme.accent },
+                    { label: 'Reinvested', data: @Html.Raw(J(Model.DividendComparison.Select(y => y.Reinvested))), backgroundColor: cbTheme.success },
+                    { label: 'Outstanding', data: @Html.Raw(J(Model.DividendComparison.Select(y => y.Outstanding))), backgroundColor: cbTheme.danger }
+                ]
+            },
+            options: { indexAxis: 'y', scales: { x: { stacked: true, grid: { color: cbTheme.grid } }, y: { stacked: true, grid: { display: false } } } }
+        });
+        </text>
+    }
+</script>
+}

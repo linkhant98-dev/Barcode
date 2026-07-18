@@ -1,0 +1,159 @@
+@model EditApplicationViewModel
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = Model.ApplicationNo,
+        Description = $"{Model.Type} application",
+        StatusBadge = Model.Status
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+<partial name="_ValidationSummary" />
+
+<div class="cb-stepper">
+    <span class="cb-step done"><span class="cb-step-num">1</span> Applicant Type</span>
+    <span class="cb-step current"><span class="cb-step-num">2</span> Details &amp; Documents</span>
+    <span class="cb-step"><span class="cb-step-num">3</span> Review &amp; Submit</span>
+    <span class="cb-step"><span class="cb-step-num">4</span> KYC &amp; Registration</span>
+</div>
+
+<form asp-action="SaveDraft" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Type" />
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Group and identity</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="ShareholderGroupId" class="cb-form-label cb-required"></label>
+                <select asp-for="ShareholderGroupId" class="form-select" asp-items="@(new SelectList(ViewBag.Groups, "Id", "NameEn"))"></select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Type == ApplicantType.Personal || Model.Type == ApplicantType.Joint)
+    {
+        <div class="cb-card mb-3">
+            <h2 class="h6">Personal details</h2>
+            <p class="text-secondary-cb small">Provide identity information exactly as shown on official documents.</p>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="NameEn" class="cb-form-label cb-required"></label>
+                    <input asp-for="NameEn" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="NameMm" class="cb-form-label"></label>
+                    <input asp-for="NameMm" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="DateOfBirth" class="cb-form-label cb-required"></label>
+                    <input asp-for="DateOfBirth" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NrcPrefixCode" class="cb-form-label"></label>
+                    <input asp-for="NrcPrefixCode" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NrcNumber" class="cb-form-label cb-required"></label>
+                    <input asp-for="NrcNumber" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FatherName" class="cb-form-label"></label>
+                    <input asp-for="FatherName" class="form-control" />
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.Type == ApplicantType.Corporate)
+    {
+        <div class="cb-card mb-3">
+            <h2 class="h6">Corporate details</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="LegalNameEn" class="cb-form-label cb-required"></label>
+                    <input asp-for="LegalNameEn" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="RegistrationNumber" class="cb-form-label cb-required"></label>
+                    <input asp-for="RegistrationNumber" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CorporateRegistrationDate" class="cb-form-label cb-required"></label>
+                    <input asp-for="CorporateRegistrationDate" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="LegalForm" class="cb-form-label"></label>
+                    <input asp-for="LegalForm" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TaxIdentifier" class="cb-form-label"></label>
+                    <input asp-for="TaxIdentifier" class="form-control" />
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Address and contact</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="AddressLine1" class="cb-form-label"></label>
+                <input asp-for="AddressLine1" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Township" class="cb-form-label"></label>
+                <input asp-for="Township" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="City" class="cb-form-label"></label>
+                <input asp-for="City" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="StateRegion" class="cb-form-label"></label>
+                <input asp-for="StateRegion" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Mobile" class="cb-form-label cb-required"></label>
+                <input asp-for="Mobile" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Email" class="cb-form-label"></label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Documents</h2>
+        <div class="cb-dropzone">
+            <i class="bi bi-cloud-upload fs-3"></i>
+            <p class="mb-0">Drag files here or choose files</p>
+            <p class="small mb-0">PDF, Word, Excel, JPG or PNG &middot; Maximum file 5 MB; maximum image 2 MB</p>
+        </div>
+        <p class="cb-help-text">Document upload/storage is a stubbed integration point in this build (see README).</p>
+    </div>
+
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Back to list</a>
+        <button type="submit" class="btn btn-cb-outline">Save Draft</button>
+    </div>
+</form>
+
+@if (Model.Status == "Draft")
+{
+    <form asp-action="Submit" method="post" class="d-inline">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-cb-gold mt-2">Submit for KYC</button>
+    </form>
+}

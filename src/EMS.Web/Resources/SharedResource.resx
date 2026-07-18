@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="ShareholderApplications" xml:space="preserve"><value>Applications</value></data>
+  <data name="RegisteredShareholders" xml:space="preserve"><value>Registered Shareholders</value></data>
+  <data name="KycQueue" xml:space="preserve"><value>KYC Queue</value></data>
+  <data name="Certificates" xml:space="preserve"><value>Certificates</value></data>
+  <data name="IssueShares" xml:space="preserve"><value>Issue Shares</value></data>
+  <data name="TransferShares" xml:space="preserve"><value>Transfer Shares</value></data>
+  <data name="BonusShares" xml:space="preserve"><value>Bonus Shares</value></data>
+  <data name="Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="PendingApprovals" xml:space="preserve"><value>My Pending Approvals</value></data>
+  <data name="SubmittedByMe" xml:space="preserve"><value>Submitted by Me</value></data>
+  <data name="Reports" xml:space="preserve"><value>Standard Reports</value></data>
+  <data name="UsersAndRoles" xml:space="preserve"><value>Users and Roles</value></data>
+  <data name="ApprovalMatrix" xml:space="preserve"><value>Approval Matrix</value></data>
+  <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
+  <data name="AuditLog" xml:space="preserve"><value>Audit Log</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
+</root>

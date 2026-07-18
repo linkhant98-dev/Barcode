@@ -1,0 +1,105 @@
+@model ShareholderProfileViewModel
+@{
+    var s = Model.Shareholder;
+    var header = new PageHeaderViewModel
+    {
+        Title = $"{s.ShareholderNo}  {(s.Type == EMS.Domain.Common.ApplicantType.Corporate ? s.Corporate?.LegalNameEn : s.Person?.NameEn)}",
+        Description = $"{s.Type} shareholder | {s.ShareholderGroup?.NameEn}",
+        StatusBadge = s.Status.ToString(),
+        PrimaryAction = new PageAction("Create Transaction", Url.Action("Create", "IssueShares", new { shareholderId = s.Id })!, "primary", "bi-plus-lg")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-kpi-row">
+    <div class="cb-card cb-card--kpi highlight">
+        <span class="text-secondary-cb small">Total active shares</span>
+        <span class="cb-kpi-value">@Model.TotalShares.ToString("N0")</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="text-secondary-cb small">Paid-up capital</span>
+        <span class="cb-kpi-value">MMK @((Model.PaidUpCapital / 1_000_000m).ToString("N2"))M</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="text-secondary-cb small">Active certificates</span>
+        <span class="cb-kpi-value">@Model.Certificates.Count(c => c.Status == EMS.Domain.Common.CertificateStatus.Active || c.Status == EMS.Domain.Common.CertificateStatus.PendingPrint)</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="text-secondary-cb small">Registration date</span>
+        <span class="cb-kpi-value" style="font-size:20px;">@s.RegistrationDate.ToString("dd MMM yyyy")</span>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-overview">Overview</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ledger">Shareholdings</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-certs">Certificates</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-overview">
+        <div class="cb-card">
+            <dl class="row mb-0">
+                <dt class="col-3">NRC / Registration</dt>
+                <dd class="col-9">@(s.Person?.NrcNumber ?? s.Corporate?.RegistrationNumber)</dd>
+                <dt class="col-3">Mobile</dt>
+                <dd class="col-9">@(s.Contacts.FirstOrDefault(c => c.ContactType == EMS.Domain.Common.ContactType.Mobile)?.Value)</dd>
+                <dt class="col-3">Email</dt>
+                <dd class="col-9">@(s.Contacts.FirstOrDefault(c => c.ContactType == EMS.Domain.Common.ContactType.Email)?.Value)</dd>
+                <dt class="col-3">Address</dt>
+                <dd class="col-9">@(s.Addresses.FirstOrDefault() is { } a ? $"{a.Line1}, {a.Township}, {a.City}" : "-")</dd>
+                <dt class="col-3">KYC status</dt>
+                <dd class="col-9"><partial name="_StatusBadge" model="@s.KycStatus.ToString()" /></dd>
+            </dl>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab-ledger">
+        <div class="cb-table-card">
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Date</th><th>Reference</th><th class="numeric">Quantity</th><th class="numeric">Capital</th><th class="numeric">Running balance</th></tr></thead>
+                    <tbody>
+                        @if (Model.LedgerEntries.Count == 0)
+                        {
+                            <tr><td colspan="5"><div class="cb-empty-state">No ledger activity yet.</div></td></tr>
+                        }
+                        @foreach (var l in Model.LedgerEntries)
+                        {
+                            <tr>
+                                <td>@l.EffectiveDate.ToString("dd MMM yyyy")</td>
+                                <td>@l.SourceReference</td>
+                                <td class="numeric">@l.QuantityDelta.ToString("N0")</td>
+                                <td class="numeric">@l.CapitalAmountDelta.ToString("N0")</td>
+                                <td class="numeric">@l.RunningQuantityBalance.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab-certs">
+        <div class="cb-table-card">
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Certificate #</th><th class="numeric">Quantity</th><th>Issue date</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @if (Model.Certificates.Count == 0)
+                        {
+                            <tr><td colspan="4"><div class="cb-empty-state">No certificates issued yet.</div></td></tr>
+                        }
+                        @foreach (var c in Model.Certificates)
+                        {
+                            <tr>
+                                <td>@c.CertificateNumber</td>
+                                <td class="numeric">@c.Quantity.ToString("N0")</td>
+                                <td>@c.IssueDate.ToString("dd MMM yyyy")</td>
+                                <td><partial name="_StatusBadge" model="@c.Status.ToString()" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

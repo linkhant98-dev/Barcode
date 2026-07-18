@@ -1,0 +1,35 @@
+@model List<EMS.Domain.CorporateActions.DividendEvent>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Dividends",
+        Description = $"{Model.Count} event(s)",
+        PrimaryAction = new PageAction("New Dividend Event", Url.Action("Create")!, "primary", "bi-cash-stack")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Event</th><th>Year</th><th class="numeric">Rate %</th><th>Version</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6"><div class="cb-empty-state">No dividend events found.</div></td></tr>
+                }
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td>@d.DividendEventNo</td>
+                        <td>@d.FinancialYear</td>
+                        <td class="numeric">@d.DividendPercentage.ToString("N2")</td>
+                        <td>@d.BatchVersion</td>
+                        <td><partial name="_StatusBadge" model="@d.Status.ToString()" /></td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@d.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

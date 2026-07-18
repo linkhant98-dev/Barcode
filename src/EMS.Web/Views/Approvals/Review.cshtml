@@ -1,0 +1,58 @@
+@model EMS.Domain.Workflow.ApprovalStep
+@{
+    var instance = Model.ApprovalInstance!;
+    var header = new PageHeaderViewModel
+    {
+        Title = instance.EntityReference,
+        Description = $"{instance.EntityType} | Submitted by {instance.SubmittedByUserId} on {instance.SubmittedAtUtc:dd MMM yyyy}",
+        StatusBadge = instance.Status.ToString()
+    };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="cb-card">
+            <h2 class="h6">Decision</h2>
+            <form asp-action="Decide" method="post" id="decisionForm">
+                <input type="hidden" name="approvalStepId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label class="cb-form-label cb-required">Decision</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="decision" id="decApprove" value="@EMS.Domain.Common.ApprovalDecision.Approve" checked />
+                            <label class="form-check-label" for="decApprove">Approve</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="decision" id="decReject" value="@EMS.Domain.Common.ApprovalDecision.Reject" />
+                            <label class="form-check-label" for="decReject">Reject</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="decision" id="decRevert" value="@EMS.Domain.Common.ApprovalDecision.Revert" />
+                            <label class="form-check-label" for="decRevert">Revert</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="cb-form-label" id="commentLabel">Comment</label>
+                    <textarea name="comment" class="form-control" rows="3"></textarea>
+                    <div class="cb-help-text">Required for Reject or Revert.</div>
+                </div>
+
+                <div class="cb-page-actions">
+                    <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+                    <button type="submit" class="btn btn-cb-primary">Submit Decision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="cb-card">
+            <h2 class="h6">Approval timeline</h2>
+            <partial name="_ApprovalTimeline" model="instance" />
+        </div>
+    </div>
+</div>

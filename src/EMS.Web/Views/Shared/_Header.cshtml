@@ -1,0 +1,49 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Localization
+@using EMS.Infrastructure.Identity
+@using EMS.Web.Resources
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IStringLocalizer<SharedResource> Localizer
+
+<header class="cb-header no-print">
+    <a class="cb-header__brand" asp-controller="Dashboard" asp-action="Index" style="text-decoration:none;">
+        <span class="cb-logo-mark">CB</span>
+        <span>
+            Equity Management System
+        </span>
+    </a>
+    <div class="cb-header__actions">
+        <span class="cb-env-badge d-none d-md-inline">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+
+        <form asp-controller="Account" asp-action="SetLanguage" method="post" class="d-none d-md-block">
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+            <select name="culture" class="form-select form-select-sm" style="width:auto;min-height:auto;" onchange="this.form.submit()" aria-label="Language">
+                <option value="en" selected="@(System.Globalization.CultureInfo.CurrentUICulture.Name == "en")">EN</option>
+                <option value="my" selected="@(System.Globalization.CultureInfo.CurrentUICulture.Name == "my")">မြန်မာ</option>
+            </select>
+        </form>
+
+        <a href="#" class="text-decoration-none position-relative" title="Notifications" aria-label="Notifications">
+            <i class="bi bi-bell text-secondary-cb fs-5"></i>
+        </a>
+
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <div class="dropdown">
+                <button class="btn btn-cb-outline btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> @User.Identity!.Name
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><span class="dropdown-item-text small text-secondary-cb">@string.Join(", ", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))</span></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="dropdown-item">@Localizer["SignOut"]</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+</header>

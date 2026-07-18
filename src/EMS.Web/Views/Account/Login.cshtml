@@ -1,0 +1,78 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+<div class="d-flex" style="min-height:100vh;">
+    <div class="d-none d-lg-flex flex-column justify-content-between text-white p-5" style="flex:0 0 42%; background: linear-gradient(160deg, var(--cb-navy-900), var(--cb-navy-800));">
+        <div>
+            <div class="cb-rainbow-line" style="width:64px;border-radius:4px;margin-bottom:24px;"></div>
+            <h1 class="fw-bold" style="font-size:32px;">Equity Management System</h1>
+            <p class="fs-5" style="max-width:380px;opacity:.9;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
+        </div>
+        <p class="small opacity-75 mb-0">&copy; @DateTime.UtcNow.Year CB Bank. Internal use only.</p>
+    </div>
+
+    <div class="d-flex flex-column justify-content-center flex-fill p-4 p-md-5" style="max-width:520px;margin:0 auto;">
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <span class="cb-logo-mark">CB</span>
+            <strong>Equity Management System</strong>
+            <span class="cb-env-badge ms-2">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+        </div>
+
+        <h2 class="h3 mb-3">Sign in</h2>
+
+        <partial name="_ValidationSummary" />
+
+        <form asp-controller="Account" asp-action="Login" method="post" novalidate>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="UserName" class="cb-form-label cb-required"></label>
+                <input asp-for="UserName" class="form-control" autocomplete="username" autofocus />
+                <span asp-validation-for="UserName" class="cb-field-error"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="cb-form-label cb-required"></label>
+                <input asp-for="Password" class="form-control" autocomplete="current-password" id="cb-password" />
+                <span asp-validation-for="Password" class="cb-field-error"></span>
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" id="cb-show-password" onclick="document.getElementById('cb-password').type = this.checked ? 'text' : 'password';" />
+                    <label class="form-check-label small" for="cb-show-password">Show password</label>
+                </div>
+                <div class="small text-secondary-cb mt-1" id="cb-capslock-warning" style="display:none;">
+                    <i class="bi bi-exclamation-triangle"></i> Caps Lock is on.
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <button type="submit" class="btn btn-cb-primary w-100 mb-3">Sign in</button>
+
+            <div class="d-flex justify-content-between small">
+                <a href="#">Forgot password</a>
+                <a href="#">Help</a>
+            </div>
+        </form>
+
+        <p class="small text-secondary-cb mt-4">
+            This system is for authorized CB Bank personnel only. All activity is logged and monitored.
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('cb-password')?.addEventListener('keyup', function (e) {
+            var warning = document.getElementById('cb-capslock-warning');
+            if (typeof e.getModifierState === 'function') {
+                warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+            }
+        });
+    </script>
+}

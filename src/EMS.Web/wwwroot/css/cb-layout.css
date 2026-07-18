@@ -1,0 +1,136 @@
+/* Application shell layout (section 5, 21.3). */
+.cb-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.cb-header {
+  height: 64px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.cb-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--cb-navy-900);
+}
+
+.cb-header__brand .cb-logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--cb-navy-800);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.cb-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cb-env-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--cb-gold-100);
+  color: var(--cb-navy-900);
+  text-transform: uppercase;
+}
+
+.cb-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.cb-sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--cb-navy-900);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.cb-sidebar__section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 16px 20px 6px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  font-size: 14px;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: rgba(255, 255, 255, 0.10);
+  border-left: 4px solid var(--cb-gold-500);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cb-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+  max-width: 1440px;
+}
+
+.cb-footer {
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-card);
+  padding: 10px 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 991px) {
+  .cb-sidebar {
+    position: fixed;
+    left: -260px;
+    top: 64px;
+    bottom: 0;
+    z-index: 1040;
+    transition: left 0.2s ease;
+    box-shadow: var(--shadow-modal);
+  }
+  .cb-sidebar.show {
+    left: 0;
+  }
+  .cb-main {
+    padding: 16px;
+  }
+}

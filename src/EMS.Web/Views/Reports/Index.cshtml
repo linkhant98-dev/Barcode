@@ -1,0 +1,21 @@
+@model List<IGrouping<string, (string Code, string Name, string Category)>>
+@{
+    var header = new PageHeaderViewModel { Title = "Reports", Description = "Standard and operational report catalogue." };
+}
+<partial name="_PageHeader" model="header" />
+
+@foreach (var group in Model)
+{
+    <h2 class="h6 mt-4">@group.Key</h2>
+    <div class="row g-3">
+        @foreach (var report in group)
+        {
+            <div class="col-md-4 col-lg-3">
+                <a class="cb-card d-block text-decoration-none h-100" asp-action="Run" asp-route-code="@report.Code">
+                    <div class="text-secondary-cb small">@report.Code</div>
+                    <div class="fw-bold">@report.Name</div>
+                </a>
+            </div>
+        }
+    </div>
+}
