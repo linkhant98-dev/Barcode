@@ -6,6 +6,7 @@
 <div class="d-flex" style="min-height:100vh;">
     <div class="d-none d-lg-flex flex-column justify-content-between text-white p-5" style="flex:0 0 42%; background: linear-gradient(160deg, var(--cb-navy-900), var(--cb-navy-800));">
         <div>
+            <span class="cb-logo-mark" style="width:64px;height:64px;margin-bottom:20px;"><partial name="_BrandLogo" /></span>
             <div class="cb-rainbow-line" style="width:64px;border-radius:4px;margin-bottom:24px;"></div>
             <h1 class="fw-bold" style="font-size:32px;color:#fff;">Equity Management System</h1>
             <p class="fs-5" style="max-width:380px;opacity:.9;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
@@ -15,7 +16,7 @@
 
     <div class="d-flex flex-column justify-content-center flex-fill p-4 p-md-5" style="max-width:520px;margin:0 auto;">
         <div class="d-flex align-items-center gap-2 mb-4">
-            <span class="cb-logo-mark">CB</span>
+            <span class="cb-logo-mark"><partial name="_BrandLogo" /></span>
             <strong>Equity Management System</strong>
             <span class="cb-env-badge ms-2">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
         </div>
