@@ -1,3 +1,4 @@
+using EMS.Application.Abstractions;
 using EMS.Application.CorporateActions;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
@@ -13,11 +14,13 @@ public class BonusController : Controller
 {
     private readonly EmsDbContext _db;
     private readonly IBonusService _bonusService;
+    private readonly IPermissionService _permissions;
 
-    public BonusController(EmsDbContext db, IBonusService bonusService)
+    public BonusController(EmsDbContext db, IBonusService bonusService, IPermissionService permissions)
     {
         _db = db;
         _bonusService = bonusService;
+        _permissions = permissions;
     }
 
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -89,6 +92,9 @@ public class BonusController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Submit(long id, CancellationToken ct)
     {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.SubmitBonusShares, ct))
+            return Forbid();
+
         await _bonusService.SubmitAsync(id, ct);
         TempData["Success"] = "Bonus event submitted for approval.";
         return RedirectToAction(nameof(Details), new { id });

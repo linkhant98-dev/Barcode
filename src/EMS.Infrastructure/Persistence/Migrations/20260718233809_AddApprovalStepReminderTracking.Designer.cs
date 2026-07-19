@@ -4,6 +4,7 @@ using EMS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(EmsDbContext))]
-    partial class EmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260718233809_AddApprovalStepReminderTracking")]
+    partial class AddApprovalStepReminderTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1626,32 +1629,6 @@ namespace EMS.Infrastructure.Persistence.Migrations
                     b.HasKey("ReportExecutionId");
 
                     b.ToTable("ReportExecutions");
-                });
-
-            modelBuilder.Entity("EMS.Domain.Security.RolePermission", b =>
-                {
-                    b.Property<long>("RolePermissionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RolePermissionId"));
-
-                    b.Property<string>("PermissionKey")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("RoleName")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("RolePermissionId");
-
-                    b.HasIndex("RoleName", "PermissionKey")
-                        .IsUnique();
-
-                    b.ToTable("RolePermissions");
                 });
 
             modelBuilder.Entity("EMS.Domain.Shareholders.Address", b =>

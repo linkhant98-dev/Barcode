@@ -15,7 +15,10 @@ public static class DependencyInjection
     {
         services.AddScoped<IReferenceNumberService, ReferenceNumberService>();
         services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IWorkflowService, WorkflowService>();
+        services.AddScoped<IDelegationService, DelegationService>();
 
         services.AddScoped<IShareholderApplicationService, ShareholderApplicationService>();
         services.AddScoped<IKycService, KycService>();

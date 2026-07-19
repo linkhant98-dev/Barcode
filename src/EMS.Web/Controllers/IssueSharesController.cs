@@ -1,3 +1,4 @@
+using EMS.Application.Abstractions;
 using EMS.Application.Shares;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
@@ -13,11 +14,13 @@ public class IssueSharesController : Controller
 {
     private readonly EmsDbContext _db;
     private readonly IIssueShareService _issueService;
+    private readonly IPermissionService _permissions;
 
-    public IssueSharesController(EmsDbContext db, IIssueShareService issueService)
+    public IssueSharesController(EmsDbContext db, IIssueShareService issueService, IPermissionService permissions)
     {
         _db = db;
         _issueService = issueService;
+        _permissions = permissions;
     }
 
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -90,6 +93,9 @@ public class IssueSharesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Submit(long id, CancellationToken ct)
     {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.SubmitIssueShares, ct))
+            return Forbid();
+
         await _issueService.SubmitAsync(id, ct);
         TempData["Success"] = "Issue submitted for approval.";
         return RedirectToAction(nameof(Details), new { id });

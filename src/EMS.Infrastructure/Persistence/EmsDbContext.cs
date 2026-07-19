@@ -5,6 +5,7 @@ using EMS.Domain.Documents;
 using EMS.Domain.MasterData;
 using EMS.Domain.Notifications;
 using EMS.Domain.Reporting;
+using EMS.Domain.Security;
 using EMS.Domain.Shareholders;
 using EMS.Domain.Shares;
 using EMS.Domain.Workflow;
@@ -84,6 +85,9 @@ public class EmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<ReportExecution> ReportExecutions => Set<ReportExecution>();
     public DbSet<DashboardSnapshot> DashboardSnapshots => Set<DashboardSnapshot>();
     public DbSet<ReconciliationResult> ReconciliationResults => Set<ReconciliationResult>();
+
+    // Security
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

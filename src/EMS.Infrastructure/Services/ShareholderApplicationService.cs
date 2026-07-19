@@ -15,14 +15,17 @@ public class ShareholderApplicationService : IShareholderApplicationService
     private readonly ICurrentUserService _currentUser;
     private readonly IReferenceNumberService _refNumbers;
     private readonly IAuditService _audit;
+    private readonly INotificationService _notifications;
 
     public ShareholderApplicationService(
-        EmsDbContext db, ICurrentUserService currentUser, IReferenceNumberService refNumbers, IAuditService audit)
+        EmsDbContext db, ICurrentUserService currentUser, IReferenceNumberService refNumbers,
+        IAuditService audit, INotificationService notifications)
     {
         _db = db;
         _currentUser = currentUser;
         _refNumbers = refNumbers;
         _audit = audit;
+        _notifications = notifications;
     }
 
     public async Task<ShareholderApplication> CreateDraftAsync(CreateApplicationRequest request, CancellationToken ct = default)
@@ -95,5 +98,9 @@ public class ShareholderApplicationService : IShareholderApplicationService
 
         await _db.SaveChangesAsync(ct);
         await _audit.LogAsync("Submit", "SA", nameof(ShareholderApplication), application.ApplicationNo, ct: ct);
+
+        await _notifications.NotifyRoleAsync("KYC Officer", "SA_SUBMITTED",
+            "New application awaiting KYC", $"Application {application.ApplicationNo} was submitted for KYC review.",
+            application.ApplicationNo, $"/Kyc/Decide/{application.KycCase.Id}", ct);
     }
 }

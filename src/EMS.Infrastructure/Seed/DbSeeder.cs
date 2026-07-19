@@ -50,6 +50,47 @@ public static class DbSeeder
                 await roleManager.CreateAsync(new ApplicationRole(role) { DescriptionEn = role });
         }
 
+        if (!await db.RolePermissions.AnyAsync())
+        {
+            // Section 12.2 default grants. System Administrator bypasses all checks in PermissionService, so
+            // it is deliberately not seeded here (nothing to toggle off for the superuser).
+            var grants = new List<(string Role, string Permission)>();
+            void Grant(string role, params string[] permissions)
+            {
+                foreach (var p in permissions) grants.Add((role, p));
+            }
+
+            Grant("Investor Relations Maker",
+                Application.Abstractions.Permissions.SubmitShareholderApplication,
+                Application.Abstractions.Permissions.SubmitIssueShares,
+                Application.Abstractions.Permissions.SubmitTransferShares,
+                Application.Abstractions.Permissions.SubmitBonusShares,
+                Application.Abstractions.Permissions.SubmitDividend,
+                Application.Abstractions.Permissions.ReportsView);
+
+            Grant("Investor Relations Checker", Application.Abstractions.Permissions.ReportsView, Application.Abstractions.Permissions.ReportsExport);
+            Grant("KYC Officer", Application.Abstractions.Permissions.ReportsView);
+
+            foreach (var approverRole in new[]
+                     {
+                         "DGM Approver", "Legal Approver", "DMD Approver", "Managing Director Approver",
+                         "CEO Approver", "Vice Chairman Approver", "Board Approver", "CBM Recording User"
+                     })
+            {
+                Grant(approverRole, Application.Abstractions.Permissions.ReportsView);
+            }
+
+            Grant("Auditor",
+                Application.Abstractions.Permissions.ReportsView,
+                Application.Abstractions.Permissions.ReportsExport,
+                Application.Abstractions.Permissions.ReportsViewSensitiveData);
+
+            Grant("Report Viewer", Application.Abstractions.Permissions.ReportsView, Application.Abstractions.Permissions.ReportsExport);
+
+            db.RolePermissions.AddRange(grants.Select(g => new EMS.Domain.Security.RolePermission { RoleName = g.Role, PermissionKey = g.Permission }));
+            await db.SaveChangesAsync();
+        }
+
         const string adminEmail = "admin@ems.local";
         if (await userManager.FindByEmailAsync(adminEmail) is null)
         {
@@ -222,6 +263,18 @@ public static class DbSeeder
                 EffectiveDate = new DateOnly(2024, 1, 10),
                 PostedAtUtc = DateTime.UtcNow,
                 PostedByUserId = "system"
+            });
+
+            db.ShareCertificates.Add(new EMS.Domain.Shares.ShareCertificate
+            {
+                CertificateNumber = $"CERT-2024-{shareholder.Id:D6}",
+                ShareholderId = shareholder.Id,
+                ShareClassId = shareClass.Id,
+                Quantity = d.Shares,
+                Status = Domain.Common.CertificateStatus.Active,
+                IssueDate = new DateOnly(2024, 1, 10),
+                CreatedAtUtc = DateTime.UtcNow,
+                CreatedBy = "system"
             });
         }
 

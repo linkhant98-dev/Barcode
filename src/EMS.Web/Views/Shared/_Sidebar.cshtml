@@ -44,6 +44,9 @@
     <a class="sidebar-link @(Active("Approvals") ? "active" : "")" asp-controller="Approvals" asp-action="SubmittedByMe">
         <i class="bi bi-send"></i> @Localizer["SubmittedByMe"]
     </a>
+    <a class="sidebar-link @(Active("Delegations") ? "active" : "")" asp-controller="Delegations" asp-action="Index">
+        <i class="bi bi-person-lines-fill"></i> @Localizer["Delegations"]
+    </a>
 
     <div class="cb-sidebar__section-title">Reports</div>
     <a class="sidebar-link @(Active("Reports") ? "active" : "")" asp-controller="Reports" asp-action="Index">
@@ -56,6 +59,9 @@
     </a>
     <a class="sidebar-link @(Active("ApprovalMatrix") ? "active" : "")" asp-controller="ApprovalMatrix" asp-action="Index">
         <i class="bi bi-diagram-3"></i> @Localizer["ApprovalMatrix"]
+    </a>
+    <a class="sidebar-link @(Active("Permissions") ? "active" : "")" asp-controller="Permissions" asp-action="Index">
+        <i class="bi bi-key"></i> @Localizer["Permissions"]
     </a>
     <a class="sidebar-link @(Active("MasterData") ? "active" : "")" asp-controller="MasterData" asp-action="Index">
         <i class="bi bi-database"></i> @Localizer["MasterData"]

@@ -2,6 +2,7 @@ using System.Globalization;
 using EMS.Application.Abstractions;
 using EMS.Infrastructure;
 using EMS.Infrastructure.Identity;
+using EMS.Infrastructure.Jobs;
 using EMS.Infrastructure.Persistence;
 using EMS.Infrastructure.Seed;
 using EMS.Web.Services;
@@ -66,6 +67,11 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddEmsInfrastructureServices();
+
+// 21.1 - background jobs (approval reminders, daily reconciliation). See each job's XML doc for the
+// demo-scale interval used here vs. the spec's hourly/daily targets.
+builder.Services.AddHostedService<ApprovalReminderJob>();
+builder.Services.AddHostedService<ReconciliationJob>();
 
 builder.Services.AddControllersWithViews()
     .AddViewLocalization()

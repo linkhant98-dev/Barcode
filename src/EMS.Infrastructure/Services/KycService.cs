@@ -13,14 +13,17 @@ public class KycService : IKycService
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditService _audit;
     private readonly IShareholderRegistrationService _registration;
+    private readonly INotificationService _notifications;
 
     public KycService(
-        EmsDbContext db, ICurrentUserService currentUser, IAuditService audit, IShareholderRegistrationService registration)
+        EmsDbContext db, ICurrentUserService currentUser, IAuditService audit,
+        IShareholderRegistrationService registration, INotificationService notifications)
     {
         _db = db;
         _currentUser = currentUser;
         _audit = audit;
         _registration = registration;
+        _notifications = notifications;
     }
 
     public async Task<long> DecideAsync(KycDecisionRequest request, CancellationToken ct = default)
@@ -60,6 +63,10 @@ public class KycService : IKycService
         await _db.SaveChangesAsync(ct);
         await _audit.LogAsync("Decision", "SA", "KycCase", application.ApplicationNo,
             after: new { request.Result, request.Remark }, ct: ct);
+
+        await _notifications.NotifyUserAsync(application.MakerUserId, "KYC_DECIDED",
+            $"KYC {request.Result} - {application.ApplicationNo}", $"KYC decision recorded: {request.Result}.",
+            application.ApplicationNo, $"/ShareholderApplications/Edit/{application.Id}", ct);
 
         if (request.Result == KycResult.Approved)
         {

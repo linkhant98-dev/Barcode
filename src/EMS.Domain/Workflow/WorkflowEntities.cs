@@ -62,6 +62,9 @@ public class ApprovalStep : AuditableEntity
     public DateTime? DecisionAtUtc { get; set; }
     public string? Comment { get; set; }
     public string? DelegatedToUserId { get; set; }
+
+    /// <summary>Section 21.1 - when the overdue-approval reminder job last nudged the assigned approver role for this step.</summary>
+    public DateTime? LastReminderAtUtc { get; set; }
 }
 
 /// <summary>Temporary delegation with dates and reason; no self-delegation (11.1).</summary>

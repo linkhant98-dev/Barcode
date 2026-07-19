@@ -1,3 +1,4 @@
+using EMS.Application.Abstractions;
 using EMS.Application.CorporateActions;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
@@ -13,11 +14,13 @@ public class DividendsController : Controller
 {
     private readonly EmsDbContext _db;
     private readonly IDividendService _dividendService;
+    private readonly IPermissionService _permissions;
 
-    public DividendsController(EmsDbContext db, IDividendService dividendService)
+    public DividendsController(EmsDbContext db, IDividendService dividendService, IPermissionService permissions)
     {
         _db = db;
         _dividendService = dividendService;
+        _permissions = permissions;
     }
 
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -74,6 +77,9 @@ public class DividendsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Submit(long id, CancellationToken ct)
     {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.SubmitDividend, ct))
+            return Forbid();
+
         await _dividendService.SubmitAsync(id, ct);
         TempData["Success"] = "Dividend event submitted for approval.";
         return RedirectToAction(nameof(Details), new { id });

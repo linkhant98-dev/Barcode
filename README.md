@@ -83,10 +83,18 @@ the SQLite path uses `EnsureCreated`, not `Migrate`).
 - **Reports** — all 16 cataloged reports (the 10 baseline + 6 operational/control reports), with on-screen grid, Excel export (typed cells + metadata sheet), and PDF export (branded header/footer, page numbers).
 - **Administration** — Users & Roles, configurable Approval Matrix, Master Data (list-and-drawer pattern for groups/classes/branches/departments/NRC prefixes/document types/reason codes), append-only Audit Log viewer.
 - **CB Bank theme** — navy/gold/white palette, header/sidebar/breadcrumb shell, status badges, approval timeline, stepper, data tables, responsive off-canvas sidebar on mobile, session-timeout warning.
-- **Bilingual scaffolding** — English/Myanmar culture switch wired end-to-end (cookie-persisted `RequestLocalization`), demonstrated via `IStringLocalizer<SharedResource>` in the navigation; most in-page labels are still literal English strings (see below).
+- **Bilingual coverage** — English/Myanmar culture switch wired end-to-end (cookie-persisted `RequestLocalization`) via `IStringLocalizer<SharedResource>`; covers navigation, the dashboard, the approval decision panel, report actions, and the six features below, plus ~30 shared resource keys added on top of the original navigation-only scaffolding (see below for what's still literal English).
+- **Delegation** — a user can temporarily delegate an approver role to a colleague (date range + reason, no self-delegation); the workflow engine's step-authorization check accepts either the role holder or an active delegate.
+- **Role-based step authorization** — beyond maker-checker (a submitter can't approve their own item), deciding a step now also requires actually holding that step's `ApproverRole` (or a valid delegation for it), closing a gap where any authenticated approver could decide any step.
+- **Notification center** — an in-app `Notification` feed (submit/KYC-decision/workflow-decision events) with a header bell dropdown (unread count, recent list, mark read/mark all read) and a full `/Notifications` inbox.
+- **Background jobs** — an `ApprovalReminderJob` (15-minute check, nudges the current step's approver role once a step has been pending 24h, throttled to one reminder per 24h) and a `ReconciliationJob` (6-hourly, flags negative share balances and duplicate certificate numbers into an idempotent `ReconciliationResult` log), both running as hosted `BackgroundService`s.
+- **Fine-grained permissions** — a `RolePermission` grant matrix (role × permission key: `SA/IS/TS/BS/DS.Submit`, `Reports.View/Export/ViewSensitiveData`) layered on top of role-based auth via `IPermissionService`, with a System Administrator admin UI (`/Permissions`) to manage grants; submit actions on all five transaction modules and the reports controller/service now check it (e.g. `Reports.ViewSensitiveData` masks NRC/registration numbers for roles that lack it).
+- **Share certificates** — a certificate register (`/Certificates`, filterable by status) and a branded, printable PDF per certificate (QuestPDF) carrying a Code128 barcode of the certificate number and a QR code encoding a verification payload, both rendered as vector shapes directly from the ZXing module matrix (no image/native-imaging dependency).
 
 Verified end-to-end (see the smoke flow described below): application → KYC approval →
-shareholder registration → issue-shares submission → maker-checker block on self-approval.
+shareholder registration → issue-shares submission → maker-checker block on self-approval; plus
+a second smoke pass covering the notification bell, delegation create/list, the permissions
+matrix, and certificate PDF download.
 
 ## Known simplifications / what's stubbed
 
@@ -95,17 +103,25 @@ build. Explicitly out of scope for this pass:
 
 - **Document/attachment storage** — upload UI is present (drop zone) but there's no backing file
   store, malware scanning, or checksum pipeline; `Attachment` entities exist but nothing writes to them yet.
-- **External integrations** — KYC/AML screening, core banking, email/SMS notifications, and
-  digital signing are modeled as configuration points only (`ScreeningReference` field, etc.), not
-  wired to any real provider.
-- **Background jobs** — approval reminders, KYC review expiry, scheduled report generation and
-  reconciliation are not implemented; reports run synchronously.
-- **Fine-grained permissions** — authorization is role-based (`[Authorize(Roles = ...)]`); the
-  spec's full action/data-scope permission matrix (12.2) is not built out.
-- **Full bilingual coverage** — the localization *mechanism* works (culture cookie, resource
-  files, `IStringLocalizer`), but only navigation labels are wired through it; most view text is
-  still hard-coded English and would need `@Localizer[...]` applied throughout plus a professional
-  Myanmar translation review before go-live.
+- **External integrations** — KYC/AML screening, core banking, and digital signing are modeled as
+  configuration points only (`ScreeningReference` field, etc.), not wired to any real provider.
+  In-app notifications are implemented (see above), but email/SMS delivery channels are not —
+  `Notification.Channel` only ever produces `InApp` rows.
+- **Background jobs** — approval reminders and balance/certificate reconciliation are implemented
+  (see above); KYC review expiry and scheduled report generation are still not implemented, and
+  reports still run synchronously on request.
+- **Fine-grained permissions** — the `RolePermission` grant matrix (see above) layers over, but
+  doesn't replace, role-based `[Authorize(Roles = ...)]` checks, and it's wired into the five
+  transaction submit actions and reports only — most other controllers/actions still rely solely
+  on role checks, not the full action/data-scope matrix from spec section 12.2.
+- **Bilingual coverage** — expanded well beyond navigation (dashboard, approvals, reports,
+  delegation/notification/permission/certificate screens, ~30 new resource keys), but still not
+  exhaustive — most of the transaction-module forms/lists (~35 remaining views) are still literal
+  English and would need `@Localizer[...]` applied throughout, plus a professional Myanmar
+  translation review, before go-live.
+- **Certificate PDF** — the barcode/QR are generated correctly, but the document is not digitally
+  signed and there's no tamper-evident hash beyond the QR's verification payload; a
+  production rollout would want the digital-signing integration noted above wired into it.
 - **Shareholder Application wizard** — implemented as a single sectioned page with conditional
   fields (not the 8-step wizard UI described in the spec) to keep scope manageable.
 - **SQLite dev fallback quirks** — a couple of report/dashboard queries materialize rows and sum

@@ -1775,3 +1775,172 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var0 sysname;
+    SELECT @var0 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[ReconciliationResults]') AND [c].[name] = N'RowVersion');
+    IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [ReconciliationResults] DROP CONSTRAINT [' + @var0 + '];');
+    ALTER TABLE [ReconciliationResults] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var1 sysname;
+    SELECT @var1 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[KycCases]') AND [c].[name] = N'RowVersion');
+    IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [KycCases] DROP CONSTRAINT [' + @var1 + '];');
+    ALTER TABLE [KycCases] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var2 sysname;
+    SELECT @var2 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[DividendSettlements]') AND [c].[name] = N'RowVersion');
+    IF @var2 IS NOT NULL EXEC(N'ALTER TABLE [DividendSettlements] DROP CONSTRAINT [' + @var2 + '];');
+    ALTER TABLE [DividendSettlements] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var3 sysname;
+    SELECT @var3 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[DividendParameters]') AND [c].[name] = N'RowVersion');
+    IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [DividendParameters] DROP CONSTRAINT [' + @var3 + '];');
+    ALTER TABLE [DividendParameters] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var4 sysname;
+    SELECT @var4 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Delegations]') AND [c].[name] = N'RowVersion');
+    IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [Delegations] DROP CONSTRAINT [' + @var4 + '];');
+    ALTER TABLE [Delegations] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var5 sysname;
+    SELECT @var5 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[BonusParameters]') AND [c].[name] = N'RowVersion');
+    IF @var5 IS NOT NULL EXEC(N'ALTER TABLE [BonusParameters] DROP CONSTRAINT [' + @var5 + '];');
+    ALTER TABLE [BonusParameters] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    DECLARE @var6 sysname;
+    SELECT @var6 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Attachments]') AND [c].[name] = N'RowVersion');
+    IF @var6 IS NOT NULL EXEC(N'ALTER TABLE [Attachments] DROP CONSTRAINT [' + @var6 + '];');
+    ALTER TABLE [Attachments] ALTER COLUMN [RowVersion] rowversion NOT NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    ALTER TABLE [ApprovalSteps] ADD [LastReminderAtUtc] datetime2 NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718233809_AddApprovalStepReminderTracking'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260718233809_AddApprovalStepReminderTracking', N'8.0.10');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718234416_AddRolePermissions'
+)
+BEGIN
+    CREATE TABLE [RolePermissions] (
+        [RolePermissionId] bigint NOT NULL IDENTITY,
+        [RoleName] nvarchar(64) NOT NULL,
+        [PermissionKey] nvarchar(64) NOT NULL,
+        CONSTRAINT [PK_RolePermissions] PRIMARY KEY ([RolePermissionId])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718234416_AddRolePermissions'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_RolePermissions_RoleName_PermissionKey] ON [RolePermissions] ([RoleName], [PermissionKey]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260718234416_AddRolePermissions'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260718234416_AddRolePermissions', N'8.0.10');
+END;
+GO
+
+COMMIT;
+GO
+

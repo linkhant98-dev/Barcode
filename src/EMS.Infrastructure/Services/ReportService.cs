@@ -11,11 +11,13 @@ public class ReportService : IReportService
 {
     private readonly EmsDbContext _db;
     private readonly ICurrentUserService _currentUser;
+    private readonly IPermissionService _permissions;
 
-    public ReportService(EmsDbContext db, ICurrentUserService currentUser)
+    public ReportService(EmsDbContext db, ICurrentUserService currentUser, IPermissionService permissions)
     {
         _db = db;
         _currentUser = currentUser;
+        _permissions = permissions;
     }
 
     public async Task<IReadOnlyList<(string Code, string Name, string Category)>> GetCatalogueAsync(CancellationToken ct = default) =>
@@ -61,6 +63,8 @@ public class ReportService : IReportService
 
     private async Task<(List<ReportColumn>, List<IReadOnlyDictionary<string, object?>>, Dictionary<string, object?>?)> ShareholdersListAsync(CancellationToken ct)
     {
+        // 13.9.5 / 11.4 - NRC/registration numbers are masked unless the caller holds Reports.ViewSensitiveData.
+        var showSensitive = await _permissions.CurrentUserHasPermissionAsync(Permissions.ReportsViewSensitiveData, ct);
         var columns = new List<ReportColumn>
         {
             new("ShareholderNo", "Shareholder ID"), new("Name", "Name"), new("Type", "Type"),
@@ -80,7 +84,7 @@ public class ReportService : IReportService
             ("ShareholderNo", s.ShareholderNo),
             ("Name", s.Type == ApplicantType.Corporate ? s.Corporate?.LegalNameEn : s.Person?.NameEn),
             ("Type", s.Type.ToString()),
-            ("NrcOrReg", MaskSensitive(s.Person?.NrcNumber ?? s.Corporate?.RegistrationNumber)),
+            ("NrcOrReg", showSensitive ? (s.Person?.NrcNumber ?? s.Corporate?.RegistrationNumber) : MaskSensitive(s.Person?.NrcNumber ?? s.Corporate?.RegistrationNumber)),
             ("Group", s.ShareholderGroup?.NameEn),
             ("Status", s.Status.ToString()),
             ("RegistrationDate", s.RegistrationDate.ToString("dd MMM yyyy")),

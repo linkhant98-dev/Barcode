@@ -35,12 +35,44 @@
   <data name="Dividends" xml:space="preserve"><value>အမြတ်ဝေစု</value></data>
   <data name="PendingApprovals" xml:space="preserve"><value>ကျွန်ုပ်၏ အတည်ပြုရန်ကျန်ရှိသည်များ</value></data>
   <data name="SubmittedByMe" xml:space="preserve"><value>ကျွန်ုပ်တင်သွင်းထားသည်များ</value></data>
+  <data name="Delegations" xml:space="preserve"><value>လွှဲအပ်မှုများ</value></data>
   <data name="Reports" xml:space="preserve"><value>စံအစီရင်ခံစာများ</value></data>
   <data name="UsersAndRoles" xml:space="preserve"><value>အသုံးပြုသူများနှင့် အခန်းကဏ္ဍများ</value></data>
   <data name="ApprovalMatrix" xml:space="preserve"><value>အတည်ပြုမှုဇယား</value></data>
+  <data name="Permissions" xml:space="preserve"><value>ခွင့်ပြုချက်များ</value></data>
   <data name="MasterData" xml:space="preserve"><value>အခြေခံဒေတာ</value></data>
   <data name="AuditLog" xml:space="preserve"><value>စစ်ဆေးမှတ်တမ်း</value></data>
   <data name="SignOut" xml:space="preserve"><value>ထွက်မည်</value></data>
   <data name="SubmitForApproval" xml:space="preserve"><value>အတည်ပြုရန်တင်သွင်းမည်</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>မူကြမ်းသိမ်းမည်</value></data>
+  <data name="Cancel" xml:space="preserve"><value>ပယ်ဖျက်မည်</value></data>
+  <data name="Approve" xml:space="preserve"><value>အတည်ပြုမည်</value></data>
+  <data name="Reject" xml:space="preserve"><value>ပယ်ချမည်</value></data>
+  <data name="Revert" xml:space="preserve"><value>ပြန်ပို့မည်</value></data>
+  <data name="SubmitDecision" xml:space="preserve"><value>ဆုံးဖြတ်ချက်တင်သွင်းမည်</value></data>
+  <data name="Decision" xml:space="preserve"><value>ဆုံးဖြတ်ချက်</value></data>
+  <data name="Comment" xml:space="preserve"><value>မှတ်ချက်</value></data>
+  <data name="View" xml:space="preserve"><value>ကြည့်ရှုမည်</value></data>
+  <data name="ExportExcel" xml:space="preserve"><value>Excel ထုတ်ယူမည်</value></data>
+  <data name="ExportPdf" xml:space="preserve"><value>PDF ထုတ်ယူမည်</value></data>
+  <data name="Print" xml:space="preserve"><value>ပရင့်ထုတ်မည်</value></data>
+  <data name="Status" xml:space="preserve"><value>အခြေအနေ</value></data>
+  <data name="Reference" xml:space="preserve"><value>ကိုးကားအမှတ်</value></data>
+  <data name="RegisteredShareholdersKpi" xml:space="preserve"><value>စာရင်းသွင်းရှယ်ယာရှင်များ</value></data>
+  <data name="TotalShares" xml:space="preserve"><value>စုစုပေါင်းရှယ်ယာ</value></data>
+  <data name="PaidUpCapital" xml:space="preserve"><value>ပေးသွင်းရင်းနှီးငွေ</value></data>
+  <data name="PendingApprovalsKpi" xml:space="preserve"><value>အတည်ပြုရန်ကျန်ရှိသည်များ</value></data>
+  <data name="DividendProvision" xml:space="preserve"><value>အမြတ်ဝေစုပြင်ဆင်ငွေ</value></data>
+  <data name="MyPendingApprovals" xml:space="preserve"><value>ကျွန်ုပ်၏ အတည်ပြုရန်ကျန်ရှိသည်များ</value></data>
+  <data name="RecentTransactions" xml:space="preserve"><value>လတ်တလောငွေလွှဲမှုများ</value></data>
+  <data name="PendingKyc" xml:space="preserve"><value>KYC စောင့်ဆိုင်းနေသည်များ</value></data>
+  <data name="DataQualityExceptions" xml:space="preserve"><value>ဒေတာအရည်အသွေးချို့ယွင်းချက်များ</value></data>
+  <data name="NewApplication" xml:space="preserve"><value>လျှောက်လွှာအသစ်</value></data>
+  <data name="NewIssue" xml:space="preserve"><value>ထုတ်ပေးမှုအသစ်</value></data>
+  <data name="NewTransfer" xml:space="preserve"><value>လွှဲပြောင်းမှုအသစ်</value></data>
+  <data name="Notifications" xml:space="preserve"><value>အကြောင်းကြားချက်များ</value></data>
+  <data name="MarkAllRead" xml:space="preserve"><value>အားလုံးဖတ်ပြီးဟု မှတ်သားမည်</value></data>
+  <data name="Search" xml:space="preserve"><value>ရှာဖွေမည်</value></data>
+  <data name="Reset" xml:space="preserve"><value>ပြန်လည်သတ်မှတ်မည်</value></data>
+  <data name="Refresh" xml:space="preserve"><value>ပြန်လည်စတင်မည်</value></data>
 </root>

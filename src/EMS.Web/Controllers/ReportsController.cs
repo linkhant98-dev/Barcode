@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using EMS.Application.Abstractions;
 using EMS.Application.Reporting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,13 @@ namespace EMS.Web.Controllers;
 public class ReportsController : Controller
 {
     private readonly IReportService _reportService;
+    private readonly IPermissionService _permissions;
 
-    public ReportsController(IReportService reportService) => _reportService = reportService;
+    public ReportsController(IReportService reportService, IPermissionService permissions)
+    {
+        _reportService = reportService;
+        _permissions = permissions;
+    }
 
     public async Task<IActionResult> Index(CancellationToken ct)
     {
@@ -27,6 +33,10 @@ public class ReportsController : Controller
 
     public async Task<IActionResult> Run(string code, DateOnly? asOf, string? financialYear, long? shareholderId, CancellationToken ct)
     {
+        // 13.9.5 - report access requires an explicit permission.
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.ReportsView, ct))
+            return Forbid();
+
         ViewData["Title"] = code;
         ViewData["Breadcrumb"] = new List<(string, string?)> { ("Dashboard", "/"), ("Reports", Url.Action("Index")), (code, null) };
 
@@ -37,6 +47,10 @@ public class ReportsController : Controller
 
     public async Task<IActionResult> ExportExcel(string code, DateOnly? asOf, string? financialYear, long? shareholderId, CancellationToken ct)
     {
+        // 13.9.5 - export is a separate permission from view.
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.ReportsExport, ct))
+            return Forbid();
+
         var result = await _reportService.RunAsync(code, new ReportParameters(asOf, financialYear, null, shareholderId, null), ct);
 
         using var workbook = new XLWorkbook();
@@ -75,6 +89,9 @@ public class ReportsController : Controller
 
     public async Task<IActionResult> ExportPdf(string code, DateOnly? asOf, string? financialYear, long? shareholderId, CancellationToken ct)
     {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.ReportsExport, ct))
+            return Forbid();
+
         var result = await _reportService.RunAsync(code, new ReportParameters(asOf, financialYear, null, shareholderId, null), ct);
 
         var document = Document.Create(container =>

@@ -1,3 +1,4 @@
+using EMS.Application.Abstractions;
 using EMS.Application.Shareholders;
 using EMS.Domain.Common;
 using EMS.Infrastructure.Persistence;
@@ -14,11 +15,13 @@ public class ShareholderApplicationsController : Controller
 {
     private readonly EmsDbContext _db;
     private readonly IShareholderApplicationService _applicationService;
+    private readonly IPermissionService _permissions;
 
-    public ShareholderApplicationsController(EmsDbContext db, IShareholderApplicationService applicationService)
+    public ShareholderApplicationsController(EmsDbContext db, IShareholderApplicationService applicationService, IPermissionService permissions)
     {
         _db = db;
         _applicationService = applicationService;
+        _permissions = permissions;
     }
 
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -119,6 +122,9 @@ public class ShareholderApplicationsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Submit(long id, CancellationToken ct)
     {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.SubmitShareholderApplication, ct))
+            return Forbid();
+
         try
         {
             await _applicationService.SubmitAsync(id, ct);
