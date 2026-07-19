@@ -41,6 +41,12 @@
   display: block;
 }
 
+.cb-logo-mark.cb-logo-mark--lg {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 22px;
+}
+
 .cb-header__actions {
   display: flex;
   align-items: center;
@@ -136,4 +142,77 @@
   .cb-main {
     padding: 16px;
   }
+}
+
+/* Login screen (section 4.1) - branded hero panel + sign-in form. */
+.cb-login-aside {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(760px 560px at 8% -10%, rgba(253, 187, 48, 0.16), transparent 60%),
+    radial-gradient(900px 700px at 110% 115%, rgba(30, 90, 168, 0.35), transparent 55%),
+    linear-gradient(165deg, var(--cb-navy-900) 0%, var(--cb-navy-800) 55%, var(--cb-blue-600) 100%);
+}
+
+.cb-login-aside::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.9) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+.cb-login-watermark {
+  position: absolute;
+  right: -14%;
+  bottom: -22%;
+  width: 120%;
+  opacity: 0.07;
+  pointer-events: none;
+  transform: rotate(4deg);
+}
+
+.cb-login-aside > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cb-login-main {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(520px 420px at 100% 0%, rgba(253, 187, 48, 0.08), transparent 60%),
+    var(--surface-page);
+}
+
+.cb-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cb-gold-500);
+  background: rgba(253, 187, 48, 0.14);
+  border: 1px solid rgba(253, 187, 48, 0.35);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.cb-hero-rule {
+  height: 3px;
+  width: 72px;
+  border-radius: 4px;
+  background: var(--cb-gold-500);
+}
+
+.cb-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cb-gold-500);
 }

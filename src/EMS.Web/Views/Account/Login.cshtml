@@ -4,17 +4,21 @@
     Layout = "_Layout";
 }
 <div class="d-flex" style="min-height:100vh;">
-    <div class="d-none d-lg-flex flex-column justify-content-between text-white p-5" style="flex:0 0 42%; background: linear-gradient(160deg, var(--cb-navy-900), var(--cb-navy-800));">
+    <div class="cb-login-aside d-none d-lg-flex flex-column justify-content-between text-white p-5" style="flex:0 0 44%;">
+        <div class="cb-login-watermark"><partial name="_BrandLogo" /></div>
         <div>
-            <span class="cb-logo-mark" style="width:64px;height:64px;margin-bottom:20px;"><partial name="_BrandLogo" /></span>
-            <div class="cb-rainbow-line" style="width:64px;border-radius:4px;margin-bottom:24px;"></div>
-            <h1 class="fw-bold" style="font-size:32px;color:#fff;">Equity Management System</h1>
-            <p class="fs-5" style="max-width:380px;opacity:.9;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
+            <span class="cb-logo-mark cb-logo-mark--lg"><partial name="_BrandLogo" /></span>
+            <div class="cb-wordmark" style="font-size:27px;">C&nbsp;B&nbsp;BANK</div>
+            <div class="cb-hero-rule my-3"></div>
+            <span class="cb-eyebrow">Investor Relations Platform</span>
+            <h1 class="fw-bold mt-3" style="font-size:34px;color:#fff;">Equity Management System</h1>
+            <p class="fs-5 mt-2" style="max-width:380px;opacity:.9;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
         </div>
         <p class="small opacity-75 mb-0">&copy; @DateTime.UtcNow.Year CB Bank. Internal use only.</p>
     </div>
 
-    <div class="d-flex flex-column justify-content-center flex-fill p-4 p-md-5" style="max-width:520px;margin:0 auto;">
+    <div class="cb-login-main d-flex flex-column justify-content-center flex-fill p-4 p-md-5">
+        <div class="mx-auto" style="max-width:420px;width:100%;">
         <div class="d-flex align-items-center gap-2 mb-4">
             <span class="cb-logo-mark"><partial name="_BrandLogo" /></span>
             <strong>Equity Management System</strong>
@@ -63,6 +67,7 @@
         <p class="small text-secondary-cb mt-4">
             This system is for authorized CB Bank personnel only. All activity is logged and monitored.
         </p>
+        </div>
     </div>
 </div>
 

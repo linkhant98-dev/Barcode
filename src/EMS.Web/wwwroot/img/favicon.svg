@@ -1,14 +1,6 @@
-<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="cbFaviconBg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#004A8F" />
-            <stop offset="1" stop-color="#002A52" />
-        </linearGradient>
-    </defs>
-    <rect x="1" y="1" width="38" height="38" rx="9" fill="url(#cbFaviconBg)" stroke="#FDBB30" stroke-width="1.5" />
-    <path d="M9 18c2.9-4.8 7.6-7.4 11-7.4s8.1 2.6 11 7.4" fill="none" stroke="#FDBB30" stroke-width="2.4" stroke-linecap="round" />
-    <rect x="9.5" y="18.5" width="3.6" height="10" rx="1.2" fill="#FDBB30" />
-    <rect x="18.2" y="18.5" width="3.6" height="10" rx="1.2" fill="#FDBB30" />
-    <rect x="26.9" y="18.5" width="3.6" height="10" rx="1.2" fill="#FDBB30" />
-    <rect x="7.5" y="29.5" width="25" height="2.8" rx="1.4" fill="#FDBB30" />
+<svg viewBox="0 0 200 108" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 100 A95 95 0 0 1 195 100" fill="none" stroke="#EF4F5F" stroke-width="16" stroke-linecap="round" />
+    <path d="M21 100 A79 79 0 0 1 179 100" fill="none" stroke="#FDBB30" stroke-width="16" stroke-linecap="round" />
+    <path d="M37 100 A63 63 0 0 1 163 100" fill="none" stroke="#39B972" stroke-width="16" stroke-linecap="round" />
+    <path d="M53 100 A47 47 0 0 1 147 100" fill="none" stroke="#2855A5" stroke-width="16" stroke-linecap="round" />
 </svg>
