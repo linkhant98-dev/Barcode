@@ -223,8 +223,9 @@ public static class DbSeeder
         await SeedBulkRegisterAsync(db);
     }
 
-    /// <summary>A handful of demo shareholders/postings so DB-01..DB-05 and RPT screens render non-empty on first run.</summary>
-    private static async Task SeedDemoTransactionsAsync(EmsDbContext db)
+    /// <summary>A handful of demo shareholders/postings so DB-01..DB-05 and RPT screens render non-empty on first run.
+    /// Internal (not private) so EMS.Tests can call it directly without paying for the full bulk-register run.</summary>
+    internal static async Task SeedDemoTransactionsAsync(EmsDbContext db)
     {
         if (await db.Shareholders.AnyAsync()) return;
 
@@ -293,9 +294,10 @@ public static class DbSeeder
     /// pipeline applications) so the dashboard, the 16 statutory/operational reports and every list screen
     /// reflect a realistic bank-scale dataset rather than the 3-row demo above. Deterministic (fixed seed)
     /// and batched (SaveChanges every ~500 rows, not per row) so a first run completes in a reasonable time.
-    /// Guarded so it only ever runs once.
+    /// Guarded so it only ever runs once. Internal (not private) so EMS.Tests can call it directly and assert
+    /// its idempotency guard without needing to go through the full IServiceProvider-based SeedAsync.
     /// </summary>
-    private static async Task SeedBulkRegisterAsync(EmsDbContext db)
+    internal static async Task SeedBulkRegisterAsync(EmsDbContext db)
     {
         const int bulkCount = 20000;
         const int batchSize = 500;

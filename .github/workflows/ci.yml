@@ -56,7 +56,7 @@ jobs:
           -targetdir:./TestResults/CoverageReport
           -reporttypes:"Html;TextSummary"
 
-      # Floor, not a target: measured line coverage the day this gate was added was ~12.6% (heavily
+      # Floor, not a target: measured line coverage the day this gate was last raised was ~17.4% (heavily
       # diluted by 0%-covered EF migrations and generated Razor views). This only catches an outright
       # regression - raise it as real coverage grows, don't treat it as a quality bar on its own.
       - name: Enforce minimum line coverage
@@ -65,7 +65,7 @@ jobs:
           cat "$summary"
           line=$(grep -m1 "Line coverage:" "$summary" | grep -oP '[\d.]+(?=%)')
           echo "Line coverage: ${line}%"
-          threshold=10
+          threshold=15
           below=$(awk -v a="$line" -v b="$threshold" 'BEGIN { print (a < b) ? 1 : 0 }')
           if [ "$below" = "1" ]; then
             echo "::error::Line coverage ${line}% is below the ${threshold}% minimum."
@@ -86,14 +86,18 @@ jobs:
           name: coverage-report
           path: ./TestResults/CoverageReport
 
-      # Report-only: this solution currently has known-vulnerable *transitive* packages (pulled in via
-      # ClosedXML/DocumentFormat.OpenXml, Microsoft.Data.Sqlite, and Azure.Identity) that require a package
-      # upgrade to clear, not a code change - see the run summary for the list. Failing the build on them
-      # today would make CI permanently red for a pre-existing condition unrelated to this change; surface
-      # them instead so they get triaged deliberately.
+      # Blocking: the previously-known-vulnerable transitive packages (Azure.Identity, Microsoft.Identity.Client,
+      # SQLitePCLRaw.*, System.Formats.Asn1, System.IO.Packaging, System.Net.Http, System.Text.RegularExpressions)
+      # are now pinned to patched versions directly in the csproj files, so a clean run here is the normal case -
+      # a failure means a new advisory (or a dependency bump that reintroduced an old one) needs triage.
       - name: Scan for vulnerable NuGet packages
-        run: dotnet list "${{ github.workspace }}/EMS.sln" package --vulnerable --include-transitive
-        continue-on-error: true
+        run: dotnet list "${{ github.workspace }}/EMS.sln" package --vulnerable --include-transitive | tee vulnerable-packages.txt
+      - name: Fail if vulnerable packages were found
+        run: |
+          if grep -q "has the following vulnerable packages" vulnerable-packages.txt; then
+            echo "::error::Vulnerable NuGet packages detected - see the previous step's log."
+            exit 1
+          fi
 
   docker-publish:
     name: Build and push container image

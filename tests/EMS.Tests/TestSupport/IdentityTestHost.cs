@@ -7,8 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EMS.Tests.TestSupport;
 
-/// <summary>A real Identity stack (UserManager/RoleManager) over a SQLite in-memory database, for the one test
-/// (NotificationService.NotifyRoleAsync) that genuinely needs ASP.NET Core Identity rather than a fake.</summary>
+/// <summary>A real Identity stack (UserManager/RoleManager) over a SQLite in-memory database, for tests that
+/// genuinely need ASP.NET Core Identity rather than a fake - NotificationService.NotifyRoleAsync, and
+/// DbSeeder.SeedAsync (which resolves RoleManager/UserManager straight off IServiceProvider).</summary>
 public sealed class IdentityTestHost : IDisposable
 {
     private readonly SqliteConnection _connection;
@@ -18,6 +19,7 @@ public sealed class IdentityTestHost : IDisposable
     public EmsDbContext Context { get; }
     public UserManager<ApplicationUser> Users { get; }
     public RoleManager<ApplicationRole> Roles { get; }
+    public IServiceProvider Services => _scope.ServiceProvider;
 
     public IdentityTestHost()
     {
