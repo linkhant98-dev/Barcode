@@ -20,12 +20,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EMS.Domain\EMS.Domain.csproj" />
     <ProjectReference Include="..\..\src\EMS.Application\EMS.Application.csproj" />
     <ProjectReference Include="..\..\src\EMS.Infrastructure\EMS.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\EMS.Web\EMS.Web.csproj" />
   </ItemGroup>
 
 </Project>

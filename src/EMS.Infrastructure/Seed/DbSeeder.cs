@@ -38,7 +38,10 @@ public static class DbSeeder
         "Report Viewer"
     ];
 
-    public static async Task SeedAsync(IServiceProvider services)
+    /// <summary>Seeds roles, the admin user, and master/reference data. <paramref name="seedDemoData"/> controls
+    /// the demo shareholders and the ~20,000-row bulk register - both slow and unnecessary for integration
+    /// tests, which only need a fast, deterministic schema plus login credentials.</summary>
+    public static async Task SeedAsync(IServiceProvider services, bool seedDemoData = true)
     {
         var db = services.GetRequiredService<EmsDbContext>();
 
@@ -213,6 +216,8 @@ public static class DbSeeder
 
             await db.SaveChangesAsync();
         }
+
+        if (!seedDemoData) return;
 
         await SeedDemoTransactionsAsync(db);
         await SeedBulkRegisterAsync(db);

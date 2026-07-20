@@ -97,7 +97,7 @@ using (var scope = app.Services.CreateScope())
     else
         await db.Database.MigrateAsync();
 
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+    await DbSeeder.SeedAsync(scope.ServiceProvider, seedDemoData: !app.Environment.IsEnvironment("Testing"));
 }
 
 app.UseHttpsRedirection();
@@ -116,3 +116,6 @@ app.MapControllerRoute(
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
 app.Run();
+
+/// <summary>Exposes the top-level-statements Program class to EMS.Tests' WebApplicationFactory&lt;Program&gt;.</summary>
+public partial class Program { }
