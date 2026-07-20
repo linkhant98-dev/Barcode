@@ -1,6 +1,11 @@
 @model List<EMS.Domain.Shares.ShareCertificate>
 @{
-    var header = new PageHeaderViewModel { Title = "Certificates", Description = $"{Model.Count} certificate(s)" };
+    var header = new PageHeaderViewModel
+    {
+        Title = "Certificates",
+        Description = $"{Model.Count} certificate(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv", new { status = ViewBag.StatusFilter })!, "outline", "bi-download") }
+    };
 }
 <partial name="_PageHeader" model="header" />
 

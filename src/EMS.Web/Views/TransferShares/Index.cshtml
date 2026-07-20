@@ -4,6 +4,7 @@
     {
         Title = "Transfer Shares",
         Description = $"{Model.Count} record(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
         PrimaryAction = new PageAction("New Transfer", Url.Action("Create")!, "primary", "bi-arrow-left-right")
     };
 }

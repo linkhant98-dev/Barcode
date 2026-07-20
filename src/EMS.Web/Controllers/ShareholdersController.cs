@@ -1,5 +1,7 @@
+using EMS.Domain.Common;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,35 @@ public class ShareholdersController : Controller
         ViewBag.Query = q;
         var shareholders = await query.OrderBy(s => s.ShareholderNo).Take(100).ToListAsync(ct);
         return View(shareholders);
+    }
+
+    /// <summary>Exports the full matching register (not just the 100-row on-screen preview) as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(string? q, CancellationToken ct)
+    {
+        var query = _db.Shareholders.Include(s => s.Person).Include(s => s.Corporate).Include(s => s.ShareholderGroup).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            query = query.Where(s => s.ShareholderNo.Contains(q)
+                || (s.Person != null && s.Person.NameEn.Contains(q))
+                || (s.Corporate != null && s.Corporate.LegalNameEn.Contains(q)));
+        }
+
+        var shareholders = await query.OrderBy(s => s.ShareholderNo).ToListAsync(ct);
+        var ledger = await _db.ShareLedgerEntries.Where(l => !l.IsReversed)
+            .Select(l => new { l.ShareholderId, l.QuantityDelta }).ToListAsync(ct);
+        var totals = ledger.GroupBy(l => l.ShareholderId).ToDictionary(g => g.Key, g => g.Sum(x => x.QuantityDelta));
+
+        var headers = new[] { "Shareholder ID", "Name", "Type", "Group", "Status", "Registration Date", "Total Shares" };
+        var rows = shareholders.Select(s => (IReadOnlyList<object?>)new object?[]
+        {
+            s.ShareholderNo,
+            s.Type == ApplicantType.Corporate ? s.Corporate?.LegalNameEn : s.Person?.NameEn,
+            s.Type.ToString(), s.ShareholderGroup?.NameEn, s.Status.ToString(),
+            s.RegistrationDate.ToString("dd MMM yyyy"), totals.GetValueOrDefault(s.Id, 0m)
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Registered-Shareholders-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     public async Task<IActionResult> Details(long id, CancellationToken ct)

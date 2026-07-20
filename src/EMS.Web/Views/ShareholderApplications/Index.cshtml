@@ -4,6 +4,7 @@
     {
         Title = "Shareholder Applications",
         Description = $"{Model.Count} application(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
         PrimaryAction = new PageAction("New Application", Url.Action("Create")!, "primary", "bi-plus-lg")
     };
 }

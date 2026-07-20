@@ -2,6 +2,7 @@ using EMS.Application.Abstractions;
 using EMS.Application.Shares;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,27 @@ public class IssueSharesController : Controller
             .OrderByDescending(t => t.Id).Take(100).ToListAsync(ct);
 
         return View(transactions);
+    }
+
+    /// <summary>Exports the full Issue Shares history (not just the 100-row on-screen preview) as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(CancellationToken ct)
+    {
+        var transactions = await _db.ShareTransactions.Include(t => t.ShareIssue)!.ThenInclude(i => i!.Shareholder)!.ThenInclude(s => s!.Person)
+            .Include(t => t.ShareIssue)!.ThenInclude(i => i!.Shareholder)!.ThenInclude(s => s!.Corporate)
+            .Include(t => t.ShareIssue)!.ThenInclude(i => i!.ShareClass)
+            .Where(t => t.Type == Domain.Common.ShareTransactionType.IssueShares)
+            .OrderByDescending(t => t.Id).ToListAsync(ct);
+
+        var headers = new[] { "Reference", "Shareholder", "Class", "Quantity", "Amount", "Status" };
+        var rows = transactions.Select(t =>
+        {
+            var sh = t.ShareIssue?.Shareholder;
+            var name = sh?.Type == Domain.Common.ApplicantType.Corporate ? sh.Corporate?.LegalNameEn : sh?.Person?.NameEn;
+            return (IReadOnlyList<object?>)new object?[] { t.TransactionNo, name, t.ShareIssue?.ShareClass?.NameEn, t.ShareIssue?.NumberOfShares, t.TotalAmount, t.Status.ToString() };
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Issue-Shares-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     [HttpGet]

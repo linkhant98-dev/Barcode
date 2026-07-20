@@ -1,6 +1,11 @@
 @model List<EMS.Domain.Shareholders.Shareholder>
 @{
-    var header = new PageHeaderViewModel { Title = "Registered Shareholders", Description = $"{Model.Count} shareholder(s)" };
+    var header = new PageHeaderViewModel
+    {
+        Title = "Registered Shareholders",
+        Description = $"{Model.Count} shareholder(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv", new { q = ViewBag.Query })!, "outline", "bi-download") }
+    };
 }
 <partial name="_PageHeader" model="header" />
 

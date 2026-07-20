@@ -1,8 +1,13 @@
-/* Application shell layout (section 5, 21.3). */
+/* Application shell layout (section 5, 21.3).
+   height (not min-height) + overflow hidden on the body means the sidebar
+   and main content below are each independently scrollable within a fixed
+   viewport-height shell, instead of the whole page growing with a long
+   list and dragging the sidebar's nav items out of view. */
 .cb-app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .cb-header {
@@ -114,9 +119,11 @@
   min-width: 0;
   padding: 24px;
   max-width: 1440px;
+  overflow-y: auto;
 }
 
 .cb-footer {
+  flex: 0 0 auto;
   border-top: 1px solid var(--border-default);
   background: var(--surface-card);
   padding: 10px 24px;

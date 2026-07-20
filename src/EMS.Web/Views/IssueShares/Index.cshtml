@@ -4,6 +4,7 @@
     {
         Title = "Issue Shares",
         Description = $"{Model.Count} record(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
         PrimaryAction = new PageAction("New Issue", Url.Action("Create")!, "primary", "bi-file-earmark-plus")
     };
 }

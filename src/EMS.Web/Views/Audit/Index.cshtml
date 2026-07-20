@@ -1,6 +1,11 @@
 @model List<EMS.Domain.Audit.AuditLogEntry>
 @{
-    var header = new PageHeaderViewModel { Title = "Audit Log", Description = $"{Model.Count} recent entries (append-only)." };
+    var header = new PageHeaderViewModel
+    {
+        Title = "Audit Log",
+        Description = $"{Model.Count} recent entries (append-only).",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv", new { user = ViewBag.UserFilter, module = ViewBag.ModuleFilter })!, "outline", "bi-download") }
+    };
 }
 <partial name="_PageHeader" model="header" />
 

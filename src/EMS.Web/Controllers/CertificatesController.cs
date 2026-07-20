@@ -1,5 +1,6 @@
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,28 @@ public class CertificatesController : Controller
         ViewBag.StatusFilter = status;
         var certificates = await query.OrderByDescending(c => c.IssueDate).Take(200).ToListAsync(ct);
         return View(certificates);
+    }
+
+    /// <summary>Exports the full matching certificate register (not just the 200-row on-screen preview) as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(string? status, CancellationToken ct)
+    {
+        var query = _db.ShareCertificates.Include(c => c.Shareholder)!.ThenInclude(s => s!.Person)
+            .Include(c => c.Shareholder)!.ThenInclude(s => s!.Corporate)
+            .Include(c => c.ShareClass).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<Domain.Common.CertificateStatus>(status, out var parsed))
+            query = query.Where(c => c.Status == parsed);
+
+        var certificates = await query.OrderByDescending(c => c.IssueDate).ToListAsync(ct);
+        var headers = new[] { "Certificate No.", "Holder", "Class", "Quantity", "Issue Date", "Status" };
+        var rows = certificates.Select(c => (IReadOnlyList<object?>)new object?[]
+        {
+            c.CertificateNumber,
+            c.Shareholder?.Type == Domain.Common.ApplicantType.Corporate ? c.Shareholder.Corporate?.LegalNameEn : c.Shareholder?.Person?.NameEn,
+            c.ShareClass?.NameEn, c.Quantity, c.IssueDate.ToString("dd MMM yyyy"), c.Status.ToString()
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Certificates-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     public async Task<IActionResult> Details(long id, CancellationToken ct)

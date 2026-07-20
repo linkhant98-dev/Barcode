@@ -2,6 +2,7 @@ using EMS.Application.Abstractions;
 using EMS.Application.Shares;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,31 @@ public class TransferSharesController : Controller
             .OrderByDescending(t => t.Id).Take(100).ToListAsync(ct);
 
         return View(transactions);
+    }
+
+    /// <summary>Exports the full Transfer Shares history (not just the 100-row on-screen preview) as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(CancellationToken ct)
+    {
+        var transactions = await _db.ShareTransactions
+            .Include(t => t.ShareTransfer)!.ThenInclude(x => x!.FromShareholder)!.ThenInclude(s => s!.Person)
+            .Include(t => t.ShareTransfer)!.ThenInclude(x => x!.FromShareholder)!.ThenInclude(s => s!.Corporate)
+            .Include(t => t.ShareTransfer)!.ThenInclude(x => x!.ToShareholder)!.ThenInclude(s => s!.Person)
+            .Include(t => t.ShareTransfer)!.ThenInclude(x => x!.ToShareholder)!.ThenInclude(s => s!.Corporate)
+            .Where(t => t.Type == Domain.Common.ShareTransactionType.TransferShares)
+            .OrderByDescending(t => t.Id).ToListAsync(ct);
+
+        static string? HolderName(Domain.Shareholders.Shareholder? s) =>
+            s?.Type == Domain.Common.ApplicantType.Corporate ? s.Corporate?.LegalNameEn : s?.Person?.NameEn;
+
+        var headers = new[] { "Reference", "From", "To", "Quantity", "Type", "Status" };
+        var rows = transactions.Select(t => (IReadOnlyList<object?>)new object?[]
+        {
+            t.TransactionNo, HolderName(t.ShareTransfer?.FromShareholder), HolderName(t.ShareTransfer?.ToShareholder),
+            t.ShareTransfer?.Quantity, t.ShareTransfer?.TransferType.ToString(), t.Status.ToString()
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Transfer-Shares-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     [HttpGet]

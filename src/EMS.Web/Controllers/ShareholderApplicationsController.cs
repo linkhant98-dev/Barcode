@@ -3,6 +3,7 @@ using EMS.Application.Shareholders;
 using EMS.Domain.Common;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,21 @@ public class ShareholderApplicationsController : Controller
             .ToListAsync(ct);
 
         return View(applications);
+    }
+
+    /// <summary>Exports the full application pipeline (not just the 100-row on-screen preview) as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(CancellationToken ct)
+    {
+        var applications = await _db.ShareholderApplications.OrderByDescending(a => a.Id).ToListAsync(ct);
+        var headers = new[] { "Application ID", "Applicant", "Type", "Stage", "Submitted" };
+        var rows = applications.Select(a => (IReadOnlyList<object?>)new object?[]
+        {
+            a.ApplicationNo, a.Type == ApplicantType.Corporate ? a.LegalNameEn : a.NameEn, a.Type.ToString(),
+            a.Status.ToString(), a.SubmittedDate?.ToString("dd MMM yyyy") ?? "—"
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Shareholder-Applications-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     [HttpGet]

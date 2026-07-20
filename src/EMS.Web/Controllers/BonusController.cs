@@ -2,6 +2,7 @@ using EMS.Application.Abstractions;
 using EMS.Application.CorporateActions;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,21 @@ public class BonusController : Controller
         ViewData["Breadcrumb"] = new List<(string, string?)> { ("Dashboard", "/"), ("Share Operations", null), ("Bonus Shares", null) };
         var events = await _db.BonusEvents.OrderByDescending(b => b.Id).ToListAsync(ct);
         return View(events);
+    }
+
+    /// <summary>Exports the full Bonus Shares batch history as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(CancellationToken ct)
+    {
+        var events = await _db.BonusEvents.Include(b => b.Entitlements).OrderByDescending(b => b.Id).ToListAsync(ct);
+        var headers = new[] { "Batch", "Ratio", "Record Date", "Shares Issued", "Status" };
+        var rows = events.Select(b => (IReadOnlyList<object?>)new object?[]
+        {
+            b.BonusEventNo, $"{b.BonusNumerator} : {b.BonusDenominator}", b.RecordDate.ToString("dd MMM yyyy"),
+            b.Entitlements.Sum(e => e.BonusShares), b.Status.ToString()
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Bonus-Shares-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     [HttpGet]

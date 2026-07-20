@@ -2,6 +2,7 @@ using EMS.Application.Abstractions;
 using EMS.Application.CorporateActions;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
+using EMS.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,21 @@ public class DividendsController : Controller
         ViewData["Breadcrumb"] = new List<(string, string?)> { ("Dashboard", "/"), ("Share Operations", null), ("Dividends", null) };
         var events = await _db.DividendEvents.OrderByDescending(d => d.Id).ToListAsync(ct);
         return View(events);
+    }
+
+    /// <summary>Exports the full Dividend event history as CSV.</summary>
+    public async Task<IActionResult> ExportCsv(CancellationToken ct)
+    {
+        var events = await _db.DividendEvents.Include(d => d.Entitlements).OrderByDescending(d => d.Id).ToListAsync(ct);
+        var headers = new[] { "Event", "Rate", "Record Date", "Total Provision", "Status" };
+        var rows = events.Select(d => (IReadOnlyList<object?>)new object?[]
+        {
+            d.DividendEventNo, $"{d.DividendPercentage}%", d.RecordDate.ToString("dd MMM yyyy"),
+            d.Entitlements.Sum(e => e.TotalDividend), d.Status.ToString()
+        });
+
+        var bytes = CsvExportHelper.Build(headers, rows);
+        return File(bytes, "text/csv", $"Dividends-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv");
     }
 
     [HttpGet]

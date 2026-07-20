@@ -4,6 +4,7 @@
     {
         Title = "Dividends",
         Description = $"{Model.Count} event(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
         PrimaryAction = new PageAction("New Dividend Event", Url.Action("Create")!, "primary", "bi-cash-stack")
     };
 }
