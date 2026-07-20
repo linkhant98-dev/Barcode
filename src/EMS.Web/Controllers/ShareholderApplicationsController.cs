@@ -113,7 +113,9 @@ public class ShareholderApplicationsController : Controller
             Email = application.Email,
             JointHolders = application.JointHolders.Select(j => new ApplicationJointHolderRow
             {
-                NameEn = j.NameEn, NrcNumber = j.NrcNumber, OwnershipPercentage = j.OwnershipPercentage
+                NameEn = j.NameEn,
+                NrcNumber = j.NrcNumber,
+                OwnershipPercentage = j.OwnershipPercentage
             }).ToList()
         };
 

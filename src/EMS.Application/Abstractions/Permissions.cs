@@ -19,7 +19,13 @@ public static class Permissions
 
     public static readonly string[] All =
     [
-        SubmitShareholderApplication, SubmitIssueShares, SubmitTransferShares, SubmitBonusShares, SubmitDividend,
-        ReportsView, ReportsExport, ReportsViewSensitiveData
+        SubmitShareholderApplication,
+        SubmitIssueShares,
+        SubmitTransferShares,
+        SubmitBonusShares,
+        SubmitDividend,
+        ReportsView,
+        ReportsExport,
+        ReportsViewSensitiveData
     ];
 }

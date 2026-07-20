@@ -3,6 +3,7 @@ bin/
 obj/
 *.user
 *.suo
+TestResults/
 
 ## Local dev database (SQLite fallback - see appsettings.Development.json)
 *.db

@@ -11,8 +11,11 @@ namespace EMS.Tests.Services;
 /// <summary>Section 13.7/13.8/13.9.5 - report row shape, group percentage math, and sensitive-data masking.</summary>
 public class ReportServiceTests
 {
-    private static void SeedDefinition(SqliteTestDb db, string code, string name = "Report") =>
+    private static void SeedDefinition(SqliteTestDb db, string code, string name = "Report")
+    {
         db.Context.ReportDefinitions.Add(new ReportDefinition { ReportCode = code, NameEn = name, NameMm = name, Category = "Test" });
+        db.Context.SaveChanges();
+    }
 
     [Fact]
     public async Task RunAsync_UnknownReportCode_Throws()

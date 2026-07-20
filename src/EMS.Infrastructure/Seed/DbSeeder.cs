@@ -538,20 +538,32 @@ public static class DbSeeder
                 runningBalance[fromId] = (fromQty - qty, fromCapital - movedCapital);
                 db.ShareLedgerEntries.Add(new ShareLedgerEntry
                 {
-                    ShareholderId = fromId, ShareClassId = shareClass.Id, SourceReference = tx.TransactionNo,
-                    QuantityDelta = -qty, CapitalAmountDelta = -movedCapital,
-                    RunningQuantityBalance = runningBalance[fromId].Qty, RunningPaidUpCapital = runningBalance[fromId].Capital,
-                    EffectiveDate = effectiveDate, PostedAtUtc = DateTime.UtcNow, PostedByUserId = "system"
+                    ShareholderId = fromId,
+                    ShareClassId = shareClass.Id,
+                    SourceReference = tx.TransactionNo,
+                    QuantityDelta = -qty,
+                    CapitalAmountDelta = -movedCapital,
+                    RunningQuantityBalance = runningBalance[fromId].Qty,
+                    RunningPaidUpCapital = runningBalance[fromId].Capital,
+                    EffectiveDate = effectiveDate,
+                    PostedAtUtc = DateTime.UtcNow,
+                    PostedByUserId = "system"
                 });
 
                 var (toQty, toCapital) = runningBalance[toId];
                 runningBalance[toId] = (toQty + qty, toCapital + movedCapital);
                 db.ShareLedgerEntries.Add(new ShareLedgerEntry
                 {
-                    ShareholderId = toId, ShareClassId = shareClass.Id, SourceReference = tx.TransactionNo,
-                    QuantityDelta = qty, CapitalAmountDelta = movedCapital,
-                    RunningQuantityBalance = runningBalance[toId].Qty, RunningPaidUpCapital = runningBalance[toId].Capital,
-                    EffectiveDate = effectiveDate, PostedAtUtc = DateTime.UtcNow, PostedByUserId = "system"
+                    ShareholderId = toId,
+                    ShareClassId = shareClass.Id,
+                    SourceReference = tx.TransactionNo,
+                    QuantityDelta = qty,
+                    CapitalAmountDelta = movedCapital,
+                    RunningQuantityBalance = runningBalance[toId].Qty,
+                    RunningPaidUpCapital = runningBalance[toId].Capital,
+                    EffectiveDate = effectiveDate,
+                    PostedAtUtc = DateTime.UtcNow,
+                    PostedByUserId = "system"
                 });
             }
 
@@ -564,8 +576,14 @@ public static class DbSeeder
         const int applicationCount = 3000;
         WorkflowStatus[] stages =
         [
-            WorkflowStatus.Draft, WorkflowStatus.Submitted, WorkflowStatus.KycPending, WorkflowStatus.KycApproved,
-            WorkflowStatus.PendingApproval, WorkflowStatus.Approved, WorkflowStatus.Completed, WorkflowStatus.Rejected
+            WorkflowStatus.Draft,
+            WorkflowStatus.Submitted,
+            WorkflowStatus.KycPending,
+            WorkflowStatus.KycApproved,
+            WorkflowStatus.PendingApproval,
+            WorkflowStatus.Approved,
+            WorkflowStatus.Completed,
+            WorkflowStatus.Rejected
         ];
         double[] stageWeights = [0.10, 0.12, 0.15, 0.10, 0.08, 0.10, 0.30, 0.05];
         var personalGroup = groups["PERSONAL"];

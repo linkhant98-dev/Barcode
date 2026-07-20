@@ -42,7 +42,9 @@ public class ReconciliationJob : BackgroundService
         while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private async Task RunOnceAsync(CancellationToken ct)
+    /// <summary>Internal (not private) so EMS.Tests can drive a single reconciliation pass directly instead of
+    /// racing the real 6-hour PeriodicTimer inside ExecuteAsync.</summary>
+    internal async Task RunOnceAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EmsDbContext>();

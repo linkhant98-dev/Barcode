@@ -1,0 +1,40 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [CB-EMS-MVC, main]
+  pull_request:
+    branches: [CB-EMS-MVC, main]
+  schedule:
+    - cron: '0 3 * * 1' # weekly, Monday 03:00 UTC
+
+jobs:
+  analyze:
+    name: Analyze (C#)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+
+      - name: Build
+        run: |
+          dotnet restore EMS.sln
+          dotnet build EMS.sln --no-restore --configuration Release
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"

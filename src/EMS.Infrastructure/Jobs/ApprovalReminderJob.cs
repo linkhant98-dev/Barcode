@@ -45,7 +45,9 @@ public class ApprovalReminderJob : BackgroundService
         while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private async Task RunOnceAsync(CancellationToken ct)
+    /// <summary>Internal (not private) so EMS.Tests can drive a single reminder pass directly instead of
+    /// racing the real 15-minute PeriodicTimer inside ExecuteAsync.</summary>
+    internal async Task RunOnceAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EmsDbContext>();

@@ -55,8 +55,11 @@ public class UsersController : Controller
 
         var user = new ApplicationUser
         {
-            UserName = model.Email, Email = model.Email, EmailConfirmed = true,
-            FullName = model.FullName, Status = UserStatus.Active
+            UserName = model.Email,
+            Email = model.Email,
+            EmailConfirmed = true,
+            FullName = model.FullName,
+            Status = UserStatus.Active
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);

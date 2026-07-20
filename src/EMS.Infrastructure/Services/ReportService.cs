@@ -128,8 +128,10 @@ public class ReportService : IReportService
 
         var totals = new Dictionary<string, object?>
         {
-            ["HolderCount"] = grouped.Sum(g => g.Holders), ["TotalShares"] = total,
-            ["Percentage"] = 100m, ["PaidUpCapital"] = grouped.Sum(g => g.Capital)
+            ["HolderCount"] = grouped.Sum(g => g.Holders),
+            ["TotalShares"] = total,
+            ["Percentage"] = 100m,
+            ["PaidUpCapital"] = grouped.Sum(g => g.Capital)
         };
 
         return (columns, rows, totals);
