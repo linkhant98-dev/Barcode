@@ -1,0 +1,231 @@
+/* Application shell layout (section 5, 21.3). */
+.cb-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.cb-header {
+  height: 64px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.cb-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--cb-navy-900);
+}
+
+.cb-logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.cb-logo-mark svg {
+  display: block;
+}
+
+.cb-logo-mark.cb-logo-mark--lg {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 12px;
+}
+
+.cb-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cb-env-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--cb-gold-100);
+  color: var(--cb-navy-900);
+  text-transform: uppercase;
+}
+
+.cb-shell {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.cb-sidebar {
+  width: 248px;
+  flex-shrink: 0;
+  background: var(--cb-navy-900);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.cb-sidebar__section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 16px 20px 6px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  font-size: 14px;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: rgba(255, 255, 255, 0.10);
+  border-left: 4px solid var(--cb-gold-500);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cb-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+  max-width: 1440px;
+}
+
+.cb-footer {
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-card);
+  padding: 10px 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 991px) {
+  .cb-sidebar {
+    position: fixed;
+    left: -260px;
+    top: 64px;
+    bottom: 0;
+    z-index: 1040;
+    transition: left 0.2s ease;
+    box-shadow: var(--shadow-modal);
+  }
+  .cb-sidebar.show {
+    left: 0;
+  }
+  .cb-main {
+    padding: 16px;
+  }
+}
+
+/* Login screen (section 4.1) - branded hero panel + sign-in form. */
+.cb-login-aside {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    radial-gradient(760px 560px at 8% -10%, rgba(253, 187, 48, 0.16), transparent 60%),
+    radial-gradient(900px 700px at 110% 115%, rgba(30, 90, 168, 0.35), transparent 55%),
+    linear-gradient(165deg, var(--cb-navy-900) 0%, var(--cb-navy-800) 55%, var(--cb-blue-600) 100%);
+}
+
+.cb-login-aside::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.9) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+.cb-login-watermark {
+  position: absolute;
+  right: -14%;
+  bottom: -22%;
+  width: 120%;
+  opacity: 0.07;
+  pointer-events: none;
+  transform: rotate(4deg);
+  z-index: 0;
+}
+
+.cb-login-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.cb-login-copyright {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 20px;
+  z-index: 1;
+}
+
+.cb-login-main {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(520px 420px at 100% 0%, rgba(253, 187, 48, 0.08), transparent 60%),
+    var(--surface-page);
+}
+
+.cb-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cb-gold-500);
+  background: rgba(253, 187, 48, 0.14);
+  border: 1px solid rgba(253, 187, 48, 0.35);
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
+}
+
+.cb-hero-rule {
+  height: 3px;
+  width: 56px;
+  border-radius: 4px;
+  background: var(--cb-gold-500);
+}
+
+.cb-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cb-gold-500);
+}

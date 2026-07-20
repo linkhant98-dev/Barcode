@@ -1,0 +1,83 @@
+@model ReportResult
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> Localizer
+@{
+    var header = new PageHeaderViewModel { Title = Model.Title, Description = $"{Model.ReportCode} &middot; {Model.FilterSummary}" };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-filter-bar">
+    <form method="get" class="row g-2 align-items-end">
+        <input type="hidden" name="code" value="@Model.ReportCode" />
+        <div class="col-auto">
+            <label class="cb-form-label small mb-1">As-of date</label>
+            <input type="date" name="asOf" class="form-control form-control-sm" />
+        </div>
+        <div class="col-auto">
+            <label class="cb-form-label small mb-1">Financial year</label>
+            <input type="text" name="financialYear" class="form-control form-control-sm" placeholder="2025-2026" />
+        </div>
+        @if (Model.ReportCode == "RPT-009")
+        {
+            <div class="col-auto">
+                <label class="cb-form-label small mb-1 cb-required">Shareholder ID</label>
+                <input type="number" name="shareholderId" class="form-control form-control-sm" />
+            </div>
+        }
+        <div class="col-auto">
+            <button type="submit" class="btn btn-cb-outline btn-sm">Apply</button>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="text-secondary-cb small">Generated @Model.GeneratedAtUtc.ToString("dd MMM yyyy HH:mm") UTC by @Model.GeneratedByUserId</span>
+    <div class="d-flex gap-2">
+        <a class="btn btn-cb-outline btn-sm" asp-action="ExportExcel" asp-all-route-data="@(new Dictionary<string,string>{{"code", Model.ReportCode}})"><i class="bi bi-file-earmark-excel"></i> @Localizer["ExportExcel"]</a>
+        <a class="btn btn-cb-outline btn-sm" asp-action="ExportPdf" asp-all-route-data="@(new Dictionary<string,string>{{"code", Model.ReportCode}})"><i class="bi bi-file-earmark-pdf"></i> @Localizer["ExportPdf"]</a>
+        <button class="btn btn-cb-outline btn-sm no-print" onclick="window.print()"><i class="bi bi-printer"></i> @Localizer["Print"]</button>
+    </div>
+</div>
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead>
+                <tr>
+                    @foreach (var col in Model.Columns)
+                    {
+                        <th class="@(col.Numeric ? "numeric" : "")">@col.Header</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr><td colspan="@Model.Columns.Count"><div class="cb-empty-state">No data available for the selected filters.</div></td></tr>
+                }
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        @foreach (var col in Model.Columns)
+                        {
+                            var value = row.GetValueOrDefault(col.Key);
+                            <td class="@(col.Numeric ? "numeric" : "")">@(value is decimal d ? d.ToString("N2") : value)</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+            @if (Model.Totals is { Count: > 0 })
+            {
+                <tfoot>
+                    <tr class="fw-bold">
+                        @foreach (var col in Model.Columns)
+                        {
+                            var value = Model.Totals.GetValueOrDefault(col.Key);
+                            <td class="@(col.Numeric ? "numeric" : "")">@(value is decimal d ? d.ToString("N2") : (Model.Columns[0].Key == col.Key ? "Total" : value))</td>
+                        }
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+</div>

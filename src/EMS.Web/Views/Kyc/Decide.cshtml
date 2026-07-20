@@ -1,0 +1,65 @@
+@model EMS.Domain.Applications.KycCase
+@{
+    var app = Model.ShareholderApplication;
+    var header = new PageHeaderViewModel { Title = app?.ApplicationNo ?? "KYC Decision", Description = $"{app?.Type} application" };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="cb-card mb-3">
+            <h2 class="h6">Applicant summary</h2>
+            <dl class="row mb-0">
+                <dt class="col-4">Name</dt><dd class="col-8">@(app?.Type == EMS.Domain.Common.ApplicantType.Corporate ? app.LegalNameEn : app?.NameEn)</dd>
+                <dt class="col-4">NRC / Registration</dt><dd class="col-8">@(app?.NrcNumber ?? app?.RegistrationNumber)</dd>
+                <dt class="col-4">Mobile</dt><dd class="col-8">@app?.Mobile</dd>
+                <dt class="col-4">Email</dt><dd class="col-8">@app?.Email</dd>
+                <dt class="col-4">Address</dt><dd class="col-8">@app?.AddressLine1, @app?.Township, @app?.City</dd>
+            </dl>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="cb-card">
+            <h2 class="h6">KYC decision</h2>
+            <form asp-action="Decide" method="post">
+                <input type="hidden" name="kycCaseId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label class="cb-form-label cb-required">Decision</label>
+                    <select name="result" class="form-select">
+                        <option value="@EMS.Domain.Common.KycResult.Approved">Approve</option>
+                        <option value="@EMS.Domain.Common.KycResult.Rejected">Reject</option>
+                        <option value="@EMS.Domain.Common.KycResult.Reverted">Revert to maker</option>
+                        <option value="@EMS.Domain.Common.KycResult.PendingAdditionalInformation">Request additional information</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="cb-form-label cb-required">Risk rating</label>
+                    <select name="riskRating" class="form-select">
+                        <option value="@EMS.Domain.Common.RiskRating.Low">Low</option>
+                        <option value="@EMS.Domain.Common.RiskRating.Medium">Medium</option>
+                        <option value="@EMS.Domain.Common.RiskRating.High">High</option>
+                        <option value="@EMS.Domain.Common.RiskRating.Prohibited">Prohibited</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="cb-form-label">Screening reference</label>
+                    <input name="screeningReference" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="cb-form-label">Remark</label>
+                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                    <div class="cb-help-text">Required for Reject / Revert / Request information.</div>
+                </div>
+
+                <div class="cb-page-actions">
+                    <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+                    <button type="submit" class="btn btn-cb-primary">Submit Decision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

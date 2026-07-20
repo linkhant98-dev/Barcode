@@ -1,0 +1,35 @@
+/* Dashboard widget grid (section 9, 13.2-13.5). */
+.cb-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cb-widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cb-widget-card h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.cb-widget-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.cb-widget-canvas-wrap {
+  position: relative;
+  height: 260px;
+}
+
+@media (max-width: 767px) {
+  .cb-widget-grid { grid-template-columns: 1fr; }
+  .cb-widget-canvas-wrap { height: 220px; }
+}

@@ -1,0 +1,32 @@
+@model EMS.Domain.Shares.ShareCertificate
+@{
+    var holderName = Model.Shareholder?.Type == EMS.Domain.Common.ApplicantType.Corporate
+        ? Model.Shareholder?.Corporate?.LegalNameEn
+        : Model.Shareholder?.Person?.NameEn;
+    var header = new PageHeaderViewModel
+    {
+        Title = Model.CertificateNumber,
+        Description = $"{holderName} | {Model.ShareClass?.NameEn}",
+        StatusBadge = Model.Status.ToString(),
+        PrimaryAction = new PageAction("Download PDF", Url.Action("DownloadPdf", new { id = Model.Id })!, "primary", "bi-file-earmark-pdf")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-card" style="max-width:640px;">
+    <dl class="row mb-0">
+        <dt class="col-4">Shareholder</dt><dd class="col-8">@Model.Shareholder?.ShareholderNo - @holderName</dd>
+        <dt class="col-4">Share class</dt><dd class="col-8">@Model.ShareClass?.NameEn</dd>
+        <dt class="col-4">Quantity</dt><dd class="col-8 numeric">@Model.Quantity.ToString("N0")</dd>
+        <dt class="col-4">Issue date</dt><dd class="col-8">@Model.IssueDate.ToString("dd MMM yyyy")</dd>
+        <dt class="col-4">Status</dt><dd class="col-8"><partial name="_StatusBadge" model="@Model.Status.ToString()" /></dd>
+        @if (Model.PrintedDate is not null)
+        {
+            <dt class="col-4">Printed</dt><dd class="col-8">@Model.PrintedDate?.ToString("dd MMM yyyy") by @Model.PrintedByUserId</dd>
+        }
+        @if (Model.CancelledDate is not null)
+        {
+            <dt class="col-4">Cancelled</dt><dd class="col-8">@Model.CancelledDate?.ToString("dd MMM yyyy") - @Model.CancellationReason</dd>
+        }
+    </dl>
+</div>
