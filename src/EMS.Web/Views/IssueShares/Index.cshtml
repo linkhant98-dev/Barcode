@@ -27,7 +27,13 @@
                         <td class="numeric">@t.ShareIssue?.NumberOfShares.ToString("N0")</td>
                         <td class="numeric">@t.TotalAmount.ToString("N0")</td>
                         <td><partial name="_StatusBadge" model="@t.Status.ToString()" /></td>
-                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@t.Id">View</a></td>
+                        <td class="d-flex gap-1">
+                            <a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@t.Id">View</a>
+                            @if (t.Status == EMS.Domain.Common.WorkflowStatus.Completed)
+                            {
+                                <a class="btn btn-cb-outline btn-sm" asp-action="DownloadReceiptPdf" asp-route-id="@t.Id">Receipt</a>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>

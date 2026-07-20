@@ -7,6 +7,10 @@
         Description = $"Created {Model.CreatedAtUtc:dd MMM yyyy}",
         StatusBadge = Model.Status.ToString()
     };
+    if (Model.Status == EMS.Domain.Common.WorkflowStatus.Completed)
+    {
+        header.SecondaryActions.Add(new PageAction("Download Receipt", Url.Action("DownloadReceiptPdf", new { id = Model.Id })!, "outline", "bi-receipt"));
+    }
 }
 <partial name="_PageHeader" model="header" />
 @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
