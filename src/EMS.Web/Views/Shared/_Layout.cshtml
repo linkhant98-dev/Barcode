@@ -18,10 +18,9 @@
     <link rel="stylesheet" href="~/css/cb-print.css" asp-append-version="true" media="print" />
 </head>
 <body class="cb-app">
-    <div class="cb-rainbow-line"></div>
-
     @if (User.Identity?.IsAuthenticated == true)
     {
+        <div class="cb-rainbow-line"></div>
         <partial name="_Header" />
         <div class="cb-shell">
             <partial name="_Sidebar" />
@@ -34,6 +33,11 @@
             </main>
         </div>
         <partial name="_SessionTimeout" />
+        <footer class="cb-footer no-print">
+            <span>EMS v1.0</span>
+            <span class="cb-env-badge">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+            <span>Support: ir-support@cbbank.com.mm</span>
+        </footer>
     }
     else
     {
@@ -41,12 +45,6 @@
             @RenderBody()
         </main>
     }
-
-    <footer class="cb-footer no-print">
-        <span>EMS v1.0</span>
-        <span class="cb-env-badge">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
-        <span>Support: ir-support@cbbank.com.mm</span>
-    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

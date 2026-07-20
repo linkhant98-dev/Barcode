@@ -3,18 +3,18 @@
     ViewData["Title"] = "Sign in";
     Layout = "_Layout";
 }
-<div class="d-flex" style="min-height:100vh;">
-    <div class="cb-login-aside d-none d-lg-flex flex-column justify-content-between text-white p-5" style="flex:0 0 44%;">
+<div class="d-flex" style="height:100vh;overflow:hidden;">
+    <div class="cb-login-aside d-none d-lg-flex text-white" style="flex:0 0 44%;padding:40px 56px;">
         <div class="cb-login-watermark"><partial name="_BrandLogo" /></div>
-        <div>
+        <div class="cb-login-hero-content">
             <span class="cb-logo-mark cb-logo-mark--lg"><partial name="_BrandLogo" /></span>
-            <div class="cb-wordmark" style="font-size:27px;">C&nbsp;B&nbsp;BANK</div>
-            <div class="cb-hero-rule my-3"></div>
+            <div class="cb-wordmark" style="font-size:18px;">C&nbsp;B&nbsp;BANK</div>
+            <div class="cb-hero-rule" style="margin:10px 0 12px;"></div>
             <span class="cb-eyebrow">Investor Relations Platform</span>
-            <h1 class="fw-bold mt-3" style="font-size:34px;color:#fff;">Equity Management System</h1>
-            <p class="fs-5 mt-2" style="max-width:380px;opacity:.9;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
+            <h1 class="fw-bold" style="font-size:25px;color:#fff;margin-top:10px;">Equity Management System</h1>
+            <p style="max-width:340px;opacity:.9;font-size:13.5px;margin-top:6px;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
         </div>
-        <p class="small opacity-75 mb-0">&copy; @DateTime.UtcNow.Year CB Bank. Internal use only.</p>
+        <p class="cb-login-copyright small opacity-75 mb-0">&copy; @DateTime.UtcNow.Year CB Bank. Internal use only.</p>
     </div>
 
     <div class="cb-login-main d-flex flex-column justify-content-center flex-fill p-4 p-md-5">
