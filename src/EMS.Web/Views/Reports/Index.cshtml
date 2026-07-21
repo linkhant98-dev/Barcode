@@ -1,21 +1,47 @@
 @model List<IGrouping<string, (string Code, string Name, string Category)>>
 @{
     var header = new PageHeaderViewModel { Title = "Reports", Description = "Standard and operational report catalogue." };
+    string Slug(string s) => System.Text.RegularExpressions.Regex.Replace(s, "[^a-zA-Z0-9]", "-");
 }
 <partial name="_PageHeader" model="header" />
 
+<div class="cb-report-tabs" role="tablist">
+    <button type="button" class="cb-report-tab active" data-target="all">All reports</button>
+    @foreach (var group in Model)
+    {
+        <button type="button" class="cb-report-tab" data-target="@Slug(group.Key)">@group.Key</button>
+    }
+</div>
+
 @foreach (var group in Model)
 {
-    <h2 class="h6 mt-4">@group.Key</h2>
-    <div class="row g-3">
-        @foreach (var report in group)
-        {
-            <div class="col-md-4 col-lg-3">
-                <a class="cb-card d-block text-decoration-none h-100" asp-action="Run" asp-route-code="@report.Code">
-                    <div class="text-secondary-cb small">@report.Code</div>
-                    <div class="fw-bold">@report.Name</div>
-                </a>
-            </div>
-        }
+    <div class="cb-report-category" data-category="@Slug(group.Key)">
+        <h2 class="h6 mb-3">@group.Key</h2>
+        <div class="row g-3 mb-4">
+            @foreach (var report in group)
+            {
+                <div class="col-md-4 col-lg-3">
+                    <a class="cb-card cb-report-card d-block text-decoration-none h-100" asp-action="Run" asp-route-code="@report.Code">
+                        <div class="cb-report-code">@report.Code</div>
+                        <div class="fw-bold">@report.Name</div>
+                    </a>
+                </div>
+            }
+        </div>
     </div>
+}
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.cb-report-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.cb-report-tab').forEach(function (t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var target = tab.getAttribute('data-target');
+            document.querySelectorAll('.cb-report-category').forEach(function (section) {
+                section.style.display = (target === 'all' || section.getAttribute('data-category') === target) ? '' : 'none';
+            });
+        });
+    });
+</script>
 }

@@ -130,7 +130,11 @@ public class DashboardService : IDashboardService
             TotalShares: totalShares,
             PaidUpCapital: totalCapital,
             PendingApprovals: await _db.ApprovalInstances.CountAsync(i => i.Status == WorkflowStatus.PendingApproval, ct),
-            DividendProvisionCurrentYear: yearlyDividend.LastOrDefault()?.ProvisionAmount ?? 0m);
+            DividendProvisionCurrentYear: yearlyDividend.LastOrDefault()?.ProvisionAmount ?? 0m,
+            CertificatesOnIssue: await _db.ShareCertificates.CountAsync(c => c.Status == Domain.Common.CertificateStatus.Active, ct),
+            ApplicationsInProgress: await _db.ShareholderApplications.CountAsync(a =>
+                a.Status != WorkflowStatus.Completed && a.Status != WorkflowStatus.Rejected &&
+                a.Status != WorkflowStatus.Cancelled && a.Status != WorkflowStatus.Archived, ct));
 
         return new DashboardViewData(
             DateTime.UtcNow, kpis, byGroup, yearlyCapital, yearlyDividend, dividendComparison,

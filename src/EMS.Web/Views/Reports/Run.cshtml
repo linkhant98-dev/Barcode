@@ -2,7 +2,7 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<SharedResource> Localizer
 @{
-    var header = new PageHeaderViewModel { Title = Model.Title, Description = $"{Model.ReportCode} &middot; {Model.FilterSummary}" };
+    var header = new PageHeaderViewModel { Title = Model.Title, Description = $"{Model.ReportCode} · {Model.FilterSummary}" };
 }
 <partial name="_PageHeader" model="header" />
 

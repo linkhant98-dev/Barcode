@@ -14,9 +14,10 @@
         <h1 class="h3 mb-1">Good day, @User.Identity!.Name</h1>
         <p class="text-secondary-cb mb-0">Investor Relations overview &middot; Data as of @Model.DataAsOfUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</p>
     </div>
-    <form method="get" class="d-flex gap-2">
+    <form method="get" class="d-flex gap-2 no-print">
         <input type="date" name="asOf" class="form-select form-select-sm" style="min-height:auto;" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")" />
         <button type="submit" class="btn btn-cb-outline btn-sm"><i class="bi bi-arrow-clockwise"></i> @Localizer["Refresh"]</button>
+        <button type="button" class="btn btn-cb-primary btn-sm" onclick="window.print()"><i class="bi bi-download"></i> @Localizer["DownloadPdf"]</button>
     </form>
 </div>
 
@@ -45,6 +46,16 @@
         <span class="cb-kpi-icon"><i class="bi bi-percent"></i></span>
         <span class="text-secondary-cb small">@Localizer["DividendProvision"]</span>
         <span class="cb-kpi-value">MMK @((Model.Kpis.DividendProvisionCurrentYear / 1_000_000m).ToString("N1"))M</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-award"></i></span>
+        <span class="text-secondary-cb small">@Localizer["CertificatesOnIssueKpi"]</span>
+        <span class="cb-kpi-value">@Model.Kpis.CertificatesOnIssue.ToString("N0")</span>
+    </div>
+    <div class="cb-card cb-card--kpi">
+        <span class="cb-kpi-icon"><i class="bi bi-person-vcard"></i></span>
+        <span class="text-secondary-cb small">@Localizer["ApplicationsInProgressKpi"]</span>
+        <span class="cb-kpi-value">@Model.Kpis.ApplicationsInProgress.ToString("N0")</span>
     </div>
 </div>
 

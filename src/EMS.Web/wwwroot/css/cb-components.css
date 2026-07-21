@@ -185,3 +185,47 @@
 .cb-step.current .cb-step-num { background: var(--cb-navy-800); }
 .cb-step.done .cb-step-num { background: var(--cb-green-500); }
 .cb-step.error .cb-step-num { background: var(--cb-red-500); }
+
+/* Report catalogue tabs + cards (13.7/13.8). */
+.cb-report-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: 20px;
+}
+.cb-report-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.cb-report-tab:hover { background: var(--cb-blue-100); color: var(--cb-navy-900); }
+.cb-report-tab.active { color: var(--cb-navy-900); border-bottom-color: var(--cb-gold-500); }
+
+.cb-report-code {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--cb-blue-100);
+  color: var(--cb-navy-800);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.cb-report-card {
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.cb-report-card:hover {
+  border-color: var(--cb-navy-800);
+  box-shadow: var(--shadow-modal);
+  transform: translateY(-2px);
+}

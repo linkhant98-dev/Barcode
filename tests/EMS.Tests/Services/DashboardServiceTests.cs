@@ -1,4 +1,8 @@
 using EMS.Application.Shares;
+using EMS.Domain.Applications;
+using EMS.Domain.Common;
+using EMS.Domain.Shares;
+using EMS.Domain.Workflow;
 using EMS.Infrastructure.Services;
 using EMS.Tests.TestSupport;
 using Xunit;
@@ -101,5 +105,28 @@ public class DashboardServiceTests
         Assert.Equal(10_000_000m, view.YearlyPaidUpCapital[0].ClosingPaidUpCapital);
         Assert.Equal("2026", view.YearlyPaidUpCapital[1].FinancialYear);
         Assert.Equal(15_000_000m, view.YearlyPaidUpCapital[1].ClosingPaidUpCapital); // cumulative, not a per-year delta
+    }
+
+    [Fact]
+    public async Task GetDashboardAsync_KpisCountActiveCertificatesAndInProgressApplications()
+    {
+        using var db = new SqliteTestDb();
+        var group = TestSeed.Group(db.Context);
+        var shareClass = TestSeed.ShareClass(db.Context);
+        var shareholder = TestSeed.ActiveShareholder(db.Context, group.Id, "SH-24000001");
+        db.Context.ShareCertificates.AddRange(
+            new ShareCertificate { CertificateNumber = "CERT-000001", ShareholderId = shareholder.Id, ShareClassId = shareClass.Id, Quantity = 100m, Status = CertificateStatus.Active, IssueDate = new DateOnly(2026, 1, 1), CreatedAtUtc = DateTime.UtcNow, CreatedBy = "system" },
+            new ShareCertificate { CertificateNumber = "CERT-000002", ShareholderId = shareholder.Id, ShareClassId = shareClass.Id, Quantity = 50m, Status = CertificateStatus.Cancelled, IssueDate = new DateOnly(2026, 1, 1), CreatedAtUtc = DateTime.UtcNow, CreatedBy = "system" });
+        db.Context.ShareholderApplications.AddRange(
+            new ShareholderApplication { ApplicationNo = "SA-000001", Type = ApplicantType.Personal, Status = WorkflowStatus.Submitted, MakerUserId = "system", ShareholderGroupId = group.Id, CreatedAtUtc = DateTime.UtcNow, CreatedBy = "system" },
+            new ShareholderApplication { ApplicationNo = "SA-000002", Type = ApplicantType.Personal, Status = WorkflowStatus.Completed, MakerUserId = "system", ShareholderGroupId = group.Id, CreatedAtUtc = DateTime.UtcNow, CreatedBy = "system" },
+            new ShareholderApplication { ApplicationNo = "SA-000003", Type = ApplicantType.Personal, Status = WorkflowStatus.Rejected, MakerUserId = "system", ShareholderGroupId = group.Id, CreatedAtUtc = DateTime.UtcNow, CreatedBy = "system" });
+        db.Context.SaveChanges();
+        var service = new DashboardService(db.Context);
+
+        var view = await service.GetDashboardAsync(currentUserId: null, asOfDate: null);
+
+        Assert.Equal(1, view.Kpis.CertificatesOnIssue); // cancelled certificate excluded
+        Assert.Equal(1, view.Kpis.ApplicationsInProgress); // completed/rejected excluded
     }
 }

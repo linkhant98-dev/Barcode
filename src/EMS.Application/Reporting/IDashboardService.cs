@@ -13,7 +13,9 @@ public record DashboardKpis(
     decimal TotalShares,
     decimal PaidUpCapital,
     int PendingApprovals,
-    decimal DividendProvisionCurrentYear);
+    decimal DividendProvisionCurrentYear,
+    int CertificatesOnIssue,
+    int ApplicationsInProgress);
 
 public record PendingApprovalItem(string Reference, string Module, string SubmittedBy, DateTime SubmittedAtUtc, string StepName, long ApprovalStepId);
 

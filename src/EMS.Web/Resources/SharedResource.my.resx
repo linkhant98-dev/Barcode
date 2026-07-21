@@ -75,4 +75,7 @@
   <data name="Search" xml:space="preserve"><value>ရှာဖွေမည်</value></data>
   <data name="Reset" xml:space="preserve"><value>ပြန်လည်သတ်မှတ်မည်</value></data>
   <data name="Refresh" xml:space="preserve"><value>ပြန်လည်စတင်မည်</value></data>
+  <data name="DownloadPdf" xml:space="preserve"><value>PDF ဒေါင်းလုဒ်လုပ်မည်</value></data>
+  <data name="CertificatesOnIssueKpi" xml:space="preserve"><value>ထုတ်ပေးဆဲ လက်မှတ်များ</value></data>
+  <data name="ApplicationsInProgressKpi" xml:space="preserve"><value>လုပ်ငန်းစဉ်ဆဲ လျှောက်လွှာများ</value></data>
 </root>

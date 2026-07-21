@@ -75,4 +75,7 @@
   <data name="Search" xml:space="preserve"><value>Search</value></data>
   <data name="Reset" xml:space="preserve"><value>Reset</value></data>
   <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="DownloadPdf" xml:space="preserve"><value>Download PDF</value></data>
+  <data name="CertificatesOnIssueKpi" xml:space="preserve"><value>Certificates on issue</value></data>
+  <data name="ApplicationsInProgressKpi" xml:space="preserve"><value>Applications in progress</value></data>
 </root>

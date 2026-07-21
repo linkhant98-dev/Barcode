@@ -1,5 +1,6 @@
 using EMS.Domain.Applications;
 using EMS.Domain.Common;
+using EMS.Domain.CorporateActions;
 using EMS.Domain.MasterData;
 using EMS.Domain.Reporting;
 using EMS.Domain.Shareholders;
@@ -310,10 +311,11 @@ public static class DbSeeder
     }
 
     /// <summary>
-    /// Five Issue Shares top-ups, five Transfer Shares transactions, and five pipeline applications - enough
-    /// rows for every list screen and the 16 statutory/operational reports to render with real, non-empty
-    /// sample data without carrying a bank-scale (~20,000-row) register. Deterministic (fixed seed). Guarded
-    /// on ShareTransactions so it only ever runs once. Internal so EMS.Tests can call it directly.
+    /// Five Issue Shares top-ups, five Transfer Shares transactions, five pipeline applications, and two
+    /// Dividend Shares events (with an entitlement per demo shareholder) - enough rows for every list screen
+    /// and the 16 statutory/operational reports (plus the dashboard's dividend widgets) to render with real,
+    /// non-empty sample data without carrying a bank-scale (~20,000-row) register. Deterministic (fixed seed).
+    /// Guarded on ShareTransactions so it only ever runs once. Internal so EMS.Tests can call it directly.
     /// </summary>
     internal static async Task SeedSampleActivityAsync(EmsDbContext db)
     {
@@ -523,6 +525,68 @@ public static class DbSeeder
 
         await db.SaveChangesAsync();
 
+        // Two Dividend Shares events (prior and current year), each with an entitlement per demo shareholder,
+        // so DB-04/DB-05 and the Dividend reports (RPT-008..010) show real data instead of "no data available".
+        var dsSeq = 0;
+        (string FinancialYear, decimal Rate, DateOnly RecordDate)[] dividendYears =
+        [
+            ("2025", 6m, new DateOnly(2025, 6, 30)),
+            ("2026", 8m, new DateOnly(2026, 6, 30)),
+        ];
+
+        foreach (var (finYear, rate, recordDate) in dividendYears)
+        {
+            dsSeq++;
+            var dividendEvent = new DividendEvent
+            {
+                DividendEventNo = $"DS-{year}-{dsSeq:D6}",
+                FinancialYear = finYear,
+                RecordDate = recordDate,
+                DividendPercentage = rate,
+                CapitalValuePerShare = parValue,
+                BatchVersion = $"DividendShare-{recordDate:yyyyMMdd}-v1.0",
+                Status = WorkflowStatus.Completed,
+                MakerUserId = "system",
+                PostedDate = recordDate,
+                CreatedAtUtc = DateTime.UtcNow,
+                CreatedBy = "system"
+            };
+            db.DividendEvents.Add(dividendEvent);
+            await db.SaveChangesAsync();
+
+            foreach (var s in shareholders)
+            {
+                var shares = runningBalance[s.Id].Qty;
+                if (shares <= 0) continue;
+
+                var totalDividend = shares * parValue * rate / 100m;
+                var cash = Math.Round(totalDividend * 0.4m, 2);
+                var transfer = Math.Round(totalDividend * 0.35m, 2);
+                var reinvested = Math.Round(totalDividend * 0.2m, 2);
+                var outstanding = totalDividend - cash - transfer - reinvested;
+
+                db.DividendEntitlements.Add(new DividendEntitlement
+                {
+                    DividendEventId = dividendEvent.Id,
+                    ShareholderId = s.Id,
+                    OldShares = shares,
+                    NewShares = 0,
+                    EligibleDaysForNewShares = 0,
+                    OldShareDividend = totalDividend,
+                    NewShareDividend = 0,
+                    TotalDividend = totalDividend,
+                    CashWithdrawal = cash,
+                    AccountTransfer = transfer,
+                    ReinvestedAmount = reinvested,
+                    OutstandingBalance = outstanding,
+                    CreatedAtUtc = DateTime.UtcNow,
+                    CreatedBy = "system"
+                });
+            }
+
+            await db.SaveChangesAsync();
+        }
+
         // Keep the live reference-number sequences ahead of everything seeded above, so the next real
         // submission through the UI never collides with a seeded number.
         async Task BumpSequenceAsync(string module, long lastValue)
@@ -535,6 +599,7 @@ public static class DbSeeder
         await BumpSequenceAsync("IS", isSeq);
         await BumpSequenceAsync("TS", tsSeq);
         await BumpSequenceAsync("SA", saSeq);
+        await BumpSequenceAsync("DS", dsSeq);
         await db.SaveChangesAsync();
     }
 }

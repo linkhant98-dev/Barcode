@@ -55,6 +55,7 @@ public class DbSeederTests
         Assert.Equal(5, await host.Context.ShareholderApplications.CountAsync());
         Assert.Equal(5, await host.Context.ShareTransactions.CountAsync(t => t.Type == ShareTransactionType.IssueShares));
         Assert.Equal(5, await host.Context.ShareTransactions.CountAsync(t => t.Type == ShareTransactionType.TransferShares));
+        Assert.Equal(2, await host.Context.DividendEvents.CountAsync());
     }
 
     private static void SeedAllGroups(EMS.Infrastructure.Persistence.EmsDbContext db)
@@ -150,7 +151,7 @@ public class DbSeederTests
     }
 
     /// <summary>Runs the sample-activity generator end to end against the five demo shareholders (issue
-    /// top-ups, transfers, and the application pipeline). Confirms it produces the expected five-row-per-type
+    /// top-ups, transfers, the application pipeline, and dividend events). Confirms it produces the expected
     /// dataset and is idempotent on a second call.</summary>
     [Fact]
     public async Task SeedSampleActivityAsync_FullRun_ProducesFiveRowsPerTypeAndIsIdempotentOnRerun()
@@ -167,10 +168,14 @@ public class DbSeederTests
         Assert.Equal(5, db.Context.ShareTransactions.Count(t => t.Type == ShareTransactionType.IssueShares));
         Assert.Equal(5, db.Context.ShareTransactions.Count(t => t.Type == ShareTransactionType.TransferShares));
         Assert.Equal(5, db.Context.ShareholderApplications.Count());
+        Assert.Equal(2, db.Context.DividendEvents.Count());
+        Assert.Equal(10, db.Context.DividendEntitlements.Count()); // 2 events x 5 demo shareholders
 
         var totalTransactions = db.Context.ShareTransactions.Count();
+        var totalDividendEvents = db.Context.DividendEvents.Count();
         await DbSeeder.SeedSampleActivityAsync(db.Context); // guarded - must not add a second cohort
 
         Assert.Equal(totalTransactions, db.Context.ShareTransactions.Count());
+        Assert.Equal(totalDividendEvents, db.Context.DividendEvents.Count());
     }
 }
