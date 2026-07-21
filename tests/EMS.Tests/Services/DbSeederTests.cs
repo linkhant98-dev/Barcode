@@ -8,9 +8,10 @@ using Xunit;
 
 namespace EMS.Tests.Services;
 
-/// <summary>Startup seeding: idempotent core seed (roles/admin/master data), the 3-row demo register, and the
-/// ~20,000-row bulk register. SeedDemoTransactionsAsync/SeedBulkRegisterAsync are internal specifically so
-/// these tests can call them directly rather than only through the IServiceProvider-based SeedAsync.</summary>
+/// <summary>Startup seeding: idempotent core seed (roles/admin/master data), the 5-row demo register, and 5
+/// rows each of Issue Shares, Transfer Shares, and pipeline Applications. SeedDemoTransactionsAsync/
+/// SeedSampleActivityAsync are internal specifically so these tests can call them directly rather than only
+/// through the IServiceProvider-based SeedAsync.</summary>
 public class DbSeederTests
 {
     [Fact]
@@ -26,7 +27,7 @@ public class DbSeederTests
         Assert.True(await host.Users.IsInRoleAsync(admin, "System Administrator"));
         Assert.True(await host.Context.ShareholderGroups.AnyAsync());
         Assert.True(await host.Context.ReportDefinitions.CountAsync() == 16);
-        Assert.Empty(host.Context.Shareholders); // seedDemoData:false skips both demo and bulk seeding
+        Assert.Empty(host.Context.Shareholders); // seedDemoData:false skips both demo seeds
     }
 
     [Fact]
@@ -43,16 +44,26 @@ public class DbSeederTests
     }
 
     [Fact]
-    public async Task SeedAsync_WithDemoData_AlsoSeedsTheThreeRowDemoRegister()
+    public async Task SeedAsync_WithDemoData_SeedsFiveShareholdersAndFiveRowsOfSampleActivity()
     {
         using var host = new IdentityTestHost();
 
         await DbSeeder.SeedAsync(host.Services, seedDemoData: true);
 
-        // seedDemoData:true runs SeedDemoTransactionsAsync but SeedBulkRegisterAsync's own guard
-        // (Shareholders.Count < 20000) still lets the ~20,000-row bulk pass run after it - too slow to pay
-        // for in every DbSeeder test, so this only asserts on the fast demo-register part.
-        Assert.True(await host.Context.Shareholders.CountAsync() >= 3);
+        Assert.Equal(5, await host.Context.Shareholders.CountAsync());
+        Assert.Equal(5, await host.Context.ShareCertificates.CountAsync());
+        Assert.Equal(5, await host.Context.ShareholderApplications.CountAsync());
+        Assert.Equal(5, await host.Context.ShareTransactions.CountAsync(t => t.Type == ShareTransactionType.IssueShares));
+        Assert.Equal(5, await host.Context.ShareTransactions.CountAsync(t => t.Type == ShareTransactionType.TransferShares));
+    }
+
+    private static void SeedAllGroups(EMS.Infrastructure.Persistence.EmsDbContext db)
+    {
+        TestSeed.Group(db, "BOD");
+        TestSeed.Group(db, "STAFF");
+        TestSeed.Group(db, "PERSONAL");
+        TestSeed.Group(db, "PUBLIC_COMPANY");
+        TestSeed.Group(db, "COOPERATIVE");
     }
 
     private static (long GroupId, long ShareClassId) SeedMasterData(EMS.Infrastructure.Persistence.EmsDbContext db)
@@ -65,18 +76,20 @@ public class DbSeederTests
     }
 
     [Fact]
-    public async Task SeedDemoTransactionsAsync_CreatesExactlyThreeActiveShareholdersWithMatchingLedgerAndCertificates()
+    public async Task SeedDemoTransactionsAsync_CreatesExactlyFiveActiveShareholdersWithMatchingLedgerAndCertificates()
     {
         using var db = new SqliteTestDb();
-        SeedMasterData(db.Context);
+        SeedAllGroups(db.Context);
+        TestSeed.ShareClass(db.Context);
+        db.Context.SaveChanges();
 
         await DbSeeder.SeedDemoTransactionsAsync(db.Context);
 
         var shareholders = db.Context.Shareholders.ToList();
-        Assert.Equal(3, shareholders.Count);
+        Assert.Equal(5, shareholders.Count);
         Assert.All(shareholders, s => Assert.Equal(ShareholderStatus.Active, s.Status));
-        Assert.Equal(3, db.Context.ShareLedgerEntries.Count());
-        Assert.Equal(3, db.Context.ShareCertificates.Count());
+        Assert.Equal(5, db.Context.ShareLedgerEntries.Count());
+        Assert.Equal(5, db.Context.ShareCertificates.Count());
 
         var daw = shareholders.Single(s => s.ShareholderNo == "SH-250000001");
         var ledgerEntry = db.Context.ShareLedgerEntries.Single(l => l.ShareholderId == daw.Id);
@@ -88,77 +101,76 @@ public class DbSeederTests
     public async Task SeedDemoTransactionsAsync_CalledTwice_IsANoOpTheSecondTime()
     {
         using var db = new SqliteTestDb();
-        SeedMasterData(db.Context);
+        SeedAllGroups(db.Context);
+        TestSeed.ShareClass(db.Context);
+        db.Context.SaveChanges();
 
         await DbSeeder.SeedDemoTransactionsAsync(db.Context);
         await DbSeeder.SeedDemoTransactionsAsync(db.Context);
 
-        Assert.Equal(3, db.Context.Shareholders.Count());
+        Assert.Equal(5, db.Context.Shareholders.Count());
     }
 
     [Fact]
-    public async Task SeedBulkRegisterAsync_RegisterAlreadyAtTargetSize_ReturnsWithoutAddingMoreRows()
+    public async Task SeedSampleActivityAsync_RegisterAlreadyHasTransactions_ReturnsWithoutAddingMoreRows()
     {
         using var db = new SqliteTestDb();
-        var (groupId, _) = SeedMasterData(db.Context);
+        var (groupId, shareClassId) = SeedMasterData(db.Context);
 
-        // Cheaply reach the 20,000-row guard threshold without paying for the full generator (certs, ledger
-        // postings, transfers, applications) - this test is about the idempotency guard, not the data itself.
-        const int alreadySeeded = 20000;
-        var batch = new List<Shareholder>(500);
-        for (var i = 0; i < alreadySeeded; i++)
+        // A single pre-existing transaction is enough to trip the guard - this test is about the
+        // idempotency guard, not the data itself.
+        var shareholder = new Shareholder
         {
-            batch.Add(new Shareholder
-            {
-                ShareholderNo = $"SH-PRESEED-{i:D7}",
-                Type = ApplicantType.Personal,
-                ShareholderGroupId = groupId,
-                Status = ShareholderStatus.Active,
-                RegistrationDate = new DateOnly(2020, 1, 1),
-                KycStatus = KycResult.Approved,
-                CreatedAtUtc = DateTime.UtcNow,
-                CreatedBy = "system"
-            });
-            if (batch.Count == 500)
-            {
-                db.Context.Shareholders.AddRange(batch);
-                db.Context.SaveChanges();
-                batch.Clear();
-            }
-        }
+            ShareholderNo = "SH-PRESEED-0000001",
+            Type = ApplicantType.Personal,
+            ShareholderGroupId = groupId,
+            Status = ShareholderStatus.Active,
+            RegistrationDate = new DateOnly(2020, 1, 1),
+            KycStatus = KycResult.Approved,
+            CreatedAtUtc = DateTime.UtcNow,
+            CreatedBy = "system"
+        };
+        db.Context.Shareholders.Add(shareholder);
+        db.Context.SaveChanges();
+        db.Context.ShareTransactions.Add(new EMS.Domain.Shares.ShareTransaction
+        {
+            TransactionNo = "IS-2026-0000001",
+            Type = ShareTransactionType.IssueShares,
+            Status = WorkflowStatus.Completed,
+            EffectiveDate = new DateOnly(2026, 1, 1),
+            MakerUserId = "system",
+            TotalAmount = 100_000m
+        });
+        db.Context.SaveChanges();
 
-        await DbSeeder.SeedBulkRegisterAsync(db.Context);
+        await DbSeeder.SeedSampleActivityAsync(db.Context);
 
-        Assert.Equal(alreadySeeded, db.Context.Shareholders.Count());
+        Assert.Equal(1, db.Context.ShareTransactions.Count());
+        Assert.Empty(db.Context.ShareholderApplications);
     }
 
-    /// <summary>The only test that runs the real ~20,000-row generator end to end (certificates, opening
-    /// ledger postings, transfers, and the application pipeline) - deliberately slow (~45s on SQLite) because
-    /// it is otherwise never exercised by anything in this suite. Confirms the generator both produces a
-    /// consistent bank-scale register and is idempotent on a second call.</summary>
-    [Fact(Timeout = 120_000)]
-    public async Task SeedBulkRegisterAsync_FullRun_ProducesTwentyThousandShareholdersAndIsIdempotentOnRerun()
+    /// <summary>Runs the sample-activity generator end to end against the five demo shareholders (issue
+    /// top-ups, transfers, and the application pipeline). Confirms it produces the expected five-row-per-type
+    /// dataset and is idempotent on a second call.</summary>
+    [Fact]
+    public async Task SeedSampleActivityAsync_FullRun_ProducesFiveRowsPerTypeAndIsIdempotentOnRerun()
     {
         using var db = new SqliteTestDb();
-        TestSeed.Group(db.Context, "PERSONAL");
-        TestSeed.Group(db.Context, "PUBLIC_COMPANY");
-        TestSeed.Group(db.Context, "COOPERATIVE");
-        TestSeed.Group(db.Context, "STAFF");
+        SeedAllGroups(db.Context);
         TestSeed.ShareClass(db.Context);
         db.Context.NrcPrefixes.Add(new NrcPrefix { Code = "12/YAKANA", NameEn = "Yangon", NameMm = "Yangon", StateRegion = "Yangon", TownshipCode = "YAKANA", CitizenshipType = "Citizen", EffectiveFrom = new DateOnly(2020, 1, 1) });
         db.Context.SaveChanges();
+        await DbSeeder.SeedDemoTransactionsAsync(db.Context);
 
-        await DbSeeder.SeedBulkRegisterAsync(db.Context);
+        await DbSeeder.SeedSampleActivityAsync(db.Context);
 
-        var totalShareholders = db.Context.Shareholders.Count();
-        Assert.True(totalShareholders >= 20000, $"Expected at least 20,000 shareholders, found {totalShareholders}.");
-        Assert.True(db.Context.ShareCertificates.Any());
-        Assert.True(db.Context.ShareLedgerEntries.Any());
-        Assert.True(db.Context.ShareTransactions.Any(t => t.Type == EMS.Domain.Common.ShareTransactionType.TransferShares));
-        Assert.True(db.Context.ShareholderApplications.Any());
+        Assert.Equal(5, db.Context.ShareTransactions.Count(t => t.Type == ShareTransactionType.IssueShares));
+        Assert.Equal(5, db.Context.ShareTransactions.Count(t => t.Type == ShareTransactionType.TransferShares));
+        Assert.Equal(5, db.Context.ShareholderApplications.Count());
 
-        await DbSeeder.SeedBulkRegisterAsync(db.Context); // guarded - must not add a second cohort
+        var totalTransactions = db.Context.ShareTransactions.Count();
+        await DbSeeder.SeedSampleActivityAsync(db.Context); // guarded - must not add a second cohort
 
-        Assert.Equal(totalShareholders, db.Context.Shareholders.Count());
+        Assert.Equal(totalTransactions, db.Context.ShareTransactions.Count());
     }
 }

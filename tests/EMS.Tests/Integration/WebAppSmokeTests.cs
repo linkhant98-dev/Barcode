@@ -6,9 +6,9 @@ using Xunit;
 namespace EMS.Tests.Integration;
 
 /// <summary>Boots the real ASP.NET Core pipeline (routing, Identity, DbSeeder) end to end over a throwaway
-/// SQLite file per test class. Runs in the "Testing" environment so DbSeeder skips its ~20,000-row demo
-/// register (see Program.cs / DbSeeder.SeedAsync(seedDemoData:)) and only seeds roles, the admin user, and
-/// master data - fast enough to run on every build.
+/// SQLite file per test class. Runs in the "Testing" environment so DbSeeder skips its demo shareholders
+/// and sample activity (see Program.cs / DbSeeder.SeedAsync(seedDemoData:)) and only seeds roles, the admin
+/// user, and master data - fast enough to run on every build.
 ///
 /// Program.cs reads Database:Provider from configuration *before* WebApplicationBuilder.Build() runs, which
 /// is earlier than WebApplicationFactory's ConfigureAppConfiguration/ConfigureWebHost hooks take effect. Since

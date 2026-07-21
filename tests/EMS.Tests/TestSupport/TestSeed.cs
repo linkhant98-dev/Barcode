@@ -7,7 +7,7 @@ using EMS.Infrastructure.Persistence;
 namespace EMS.Tests.TestSupport;
 
 /// <summary>Minimal, fast master data for service tests - deliberately not DbSeeder (which generates a
-/// ~20,000-row demo register meant for the running app, not a per-test fixture).</summary>
+/// demo register meant for the running app, not a per-test fixture).</summary>
 public static class TestSeed
 {
     public static ShareholderGroup Group(EmsDbContext db, string code = "PERSONAL")
