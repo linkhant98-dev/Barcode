@@ -235,7 +235,7 @@ public class CertificatesController : Controller
                     });
                 });
 
-                page.Footer().Text("Confidential - CB Bank Internal Use. This document is not a negotiable instrument.").FontSize(7).FontColor("#98A6B4");
+                page.Footer().Text("Confidential - CB Bank Internal Use. This document is not a negotiable instrument. Developed by Sunfix.").FontSize(7).FontColor("#98A6B4");
             });
         });
 

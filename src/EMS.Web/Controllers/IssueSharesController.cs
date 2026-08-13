@@ -241,7 +241,7 @@ public class IssueSharesController : Controller
                     });
                 });
 
-                page.Footer().Text("Confidential - CB Bank Internal Use.").FontSize(7).FontColor("#98A6B4");
+                page.Footer().Text("Confidential - CB Bank Internal Use. Developed by Sunfix.").FontSize(7).FontColor("#98A6B4");
             });
         });
 
