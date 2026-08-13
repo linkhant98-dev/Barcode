@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Equity Management System</title>
+    <link rel="icon" type="image/svg+xml" href="~/img/favicon.svg" />
+    <link rel="alternate icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cb-print.css" asp-append-version="true" media="print" />
+    <link rel="stylesheet" href="~/css/cb-verify.css" asp-append-version="true" />
+</head>
+<body class="cb-app">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="cb-rainbow-line"></div>
+        <partial name="_Header" />
+        <div class="cb-shell">
+            <partial name="_Sidebar" />
+            <button class="btn btn-cb-outline d-lg-none no-print" id="cb-sidebar-toggle" style="position:fixed;bottom:16px;left:16px;z-index:1050;" aria-label="Toggle navigation menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <main class="cb-main" id="main-content">
+                <partial name="_Breadcrumb" />
+                @RenderBody()
+            </main>
+        </div>
+        <partial name="_SessionTimeout" />
+        <footer class="cb-footer no-print">
+            <span>Developed by Sunfix</span>
+            <span class="cb-env-badge">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+            <span>Support: ir-support@cbbank.com.mm</span>
+        </footer>
+    }
+    else
+    {
+        <main class="cb-main" style="max-width:none;padding:0;">
+            @RenderBody()
+        </main>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/chartjs/dist/chart.umd.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

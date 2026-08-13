@@ -1,0 +1,36 @@
+@model List<EMS.Domain.CorporateActions.BonusEvent>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Bonus Shares",
+        Description = $"{Model.Count} event(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
+        PrimaryAction = new PageAction("New Bonus Event", Url.Action("Create")!, "primary", "bi-gift")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Event</th><th>Year</th><th>Ratio</th><th>Version</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6"><div class="cb-empty-state">No bonus events found.</div></td></tr>
+                }
+                @foreach (var b in Model)
+                {
+                    <tr>
+                        <td>@b.BonusEventNo</td>
+                        <td>@b.FinancialYear</td>
+                        <td>@b.BonusNumerator : @b.BonusDenominator</td>
+                        <td>@b.BatchVersion</td>
+                        <td><partial name="_StatusBadge" model="@b.Status.ToString()" /></td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@b.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
