@@ -16,10 +16,25 @@
             <div class="vs-sub">Enter the certificate number printed on your share certificate.</div>
         </div>
         <div class="cb-verify-body">
+            <div id="cbScanIdle">
+                <button type="button" class="btn btn-cb-primary w-100" id="cbScanStartBtn">
+                    <i class="bi bi-camera"></i> Scan QR code
+                </button>
+            </div>
+            <div class="cb-verify-scan-panel d-none" id="cbScanPanel">
+                <div class="cb-verify-scan-video-wrap">
+                    <video id="cbScanVideo" autoplay playsinline muted></video>
+                    <div class="cb-verify-scan-frame"></div>
+                </div>
+                <p class="cb-verify-scan-hint">Point your camera at the QR code on the certificate.</p>
+                <button type="button" class="btn btn-cb-outline w-100" id="cbScanCancelBtn">Cancel scanning</button>
+            </div>
+            <div class="cb-verify-scan-error d-none" id="cbScanError"></div>
+            <div class="cb-verify-lookup-divider"><span>or enter the number manually</span></div>
             <form method="get" asp-controller="Verify" asp-action="Search" class="d-flex flex-column gap-3">
                 <div>
                     <label class="cb-form-label" for="certificateNumber">Certificate number</label>
-                    <input type="text" class="form-control" id="certificateNumber" name="certificateNumber" placeholder="CERT-2026-000001" autofocus />
+                    <input type="text" class="form-control" id="certificateNumber" name="certificateNumber" placeholder="CERT-2026-000001" />
                 </div>
                 <button type="submit" class="btn btn-cb-primary w-100">Verify certificate</button>
             </form>
@@ -36,3 +51,102 @@
 <div class="cb-verify-footer">
     &copy; @DateTime.UtcNow.Year CB Bank. Public certificate verification &mdash; no personal data shown. Developed by Sunfix.
 </div>
+
+@section Scripts {
+    <script src="~/lib/jsqr/jsQR.min.js" asp-append-version="true"></script>
+    <script>
+        // Client-side only: decodes the camera feed in-browser via jsQR and redirects to the
+        // matching /verify/{certificateNumber} page. Nothing scanned is sent anywhere before that
+        // redirect - see VerifyController for the scope of what that page then shows.
+        (function () {
+            var scanStream = null;
+            var scanRafId = null;
+
+            function extractCertNumberFromScan(raw) {
+                var text = (raw || '').trim().split('?')[0].split('#')[0];
+                var parts = text.split('/').filter(function (p) { return p.length > 0; });
+                return parts.length ? parts[parts.length - 1] : text;
+            }
+
+            function scanErrorText(err) {
+                if (typeof jsQR !== 'function' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    return "Camera scanning isn't supported in this browser — enter the number manually below.";
+                }
+                if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+                    return 'Camera access was blocked — allow camera permission, or enter the number manually below.';
+                }
+                if (err && err.name === 'NotFoundError') {
+                    return 'No camera was found on this device — enter the number manually below.';
+                }
+                return "Couldn't start the camera — enter the number manually below.";
+            }
+
+            function showScanError(text) {
+                stopScan();
+                var el = document.getElementById('cbScanError');
+                if (el) { el.textContent = text; el.classList.remove('d-none'); }
+            }
+
+            function startScan() {
+                var errEl = document.getElementById('cbScanError');
+                if (errEl) errEl.classList.add('d-none');
+
+                if (typeof jsQR !== 'function' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showScanError(scanErrorText());
+                    return;
+                }
+
+                document.getElementById('cbScanIdle').classList.add('d-none');
+                document.getElementById('cbScanPanel').classList.remove('d-none');
+
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function (stream) {
+                        scanStream = stream;
+                        var video = document.getElementById('cbScanVideo');
+                        video.srcObject = stream;
+                        video.play();
+                        var canvas = document.createElement('canvas');
+                        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+                        function tick() {
+                            if (!scanStream) return;
+                            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                                canvas.width = video.videoWidth;
+                                canvas.height = video.videoHeight;
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                var frame = null;
+                                try { frame = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (e) { frame = null; }
+                                var code = frame ? jsQR(frame.data, frame.width, frame.height, { inversionAttempts: 'dontInvert' }) : null;
+                                if (code && code.data) {
+                                    var certNo = extractCertNumberFromScan(code.data);
+                                    stopScan();
+                                    if (certNo) window.location.href = '/verify/' + encodeURIComponent(certNo);
+                                    return;
+                                }
+                            }
+                            scanRafId = requestAnimationFrame(tick);
+                        }
+                        scanRafId = requestAnimationFrame(tick);
+                    })
+                    .catch(function (err) {
+                        document.getElementById('cbScanIdle').classList.remove('d-none');
+                        document.getElementById('cbScanPanel').classList.add('d-none');
+                        showScanError(scanErrorText(err));
+                    });
+            }
+
+            function stopScan() {
+                if (scanRafId) { cancelAnimationFrame(scanRafId); scanRafId = null; }
+                if (scanStream) { scanStream.getTracks().forEach(function (t) { t.stop(); }); scanStream = null; }
+                var video = document.getElementById('cbScanVideo');
+                if (video) video.srcObject = null;
+                document.getElementById('cbScanIdle').classList.remove('d-none');
+                document.getElementById('cbScanPanel').classList.add('d-none');
+            }
+
+            document.getElementById('cbScanStartBtn').addEventListener('click', startScan);
+            document.getElementById('cbScanCancelBtn').addEventListener('click', stopScan);
+            window.addEventListener('pagehide', stopScan);
+        })();
+    </script>
+}
