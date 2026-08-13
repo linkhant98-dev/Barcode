@@ -21,6 +21,26 @@ public class VerifyController : Controller
 
     public VerifyController(EmsDbContext db) => _db = db;
 
+    /// <summary>Bare /verify (e.g. from the "Verify a certificate" link on the login page, for a visitor with
+    /// no QR code handy) - shows a lookup form rather than a specific certificate.</summary>
+    [HttpGet("/verify")]
+    public IActionResult Lookup()
+    {
+        ViewData["Title"] = "Verify a Certificate";
+        return View();
+    }
+
+    /// <summary>Routes a submitted certificate number to its Details page. A literal route ("/verify/search")
+    /// takes precedence over the parameterized "/verify/{certificateNumber}" route below, so this is never
+    /// captured by Details as a certificate number.</summary>
+    [HttpGet("/verify/search")]
+    public IActionResult Search(string? certificateNumber)
+    {
+        return string.IsNullOrWhiteSpace(certificateNumber)
+            ? RedirectToAction(nameof(Lookup))
+            : RedirectToAction(nameof(Details), new { certificateNumber = certificateNumber.Trim() });
+    }
+
     [HttpGet("/verify/{certificateNumber}")]
     public async Task<IActionResult> Details(string certificateNumber, CancellationToken ct)
     {

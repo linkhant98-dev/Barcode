@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Verify a Certificate";
+    Layout = "_Layout";
+}
+<div class="cb-verify-topband"></div>
+<header class="cb-verify-header">
+    <span class="cb-logo-mark" style="width:30px;height:30px;"><partial name="_BrandLogo" /></span>
+    <span class="cb-wordmark" style="font-size:14px;">C&nbsp;B&nbsp;BANK</span>
+    <span class="cb-env-badge ms-auto">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+</header>
+<div class="cb-verify-wrap">
+    <div class="cb-verify-card">
+        <div class="cb-verify-status-band ok">
+            <div class="vs-icon"><i class="bi bi-search"></i></div>
+            <div class="vs-title">Verify a certificate</div>
+            <div class="vs-sub">Enter the certificate number printed on your share certificate.</div>
+        </div>
+        <div class="cb-verify-body">
+            <form method="get" asp-controller="Verify" asp-action="Search" class="d-flex flex-column gap-3">
+                <div>
+                    <label class="cb-form-label" for="certificateNumber">Certificate number</label>
+                    <input type="text" class="form-control" id="certificateNumber" name="certificateNumber" placeholder="CERT-2026-000001" autofocus />
+                </div>
+                <button type="submit" class="btn btn-cb-primary w-100">Verify certificate</button>
+            </form>
+            <div class="cb-verify-scope-note">
+                <span class="vsn-icon"><i class="bi bi-info-circle"></i></span>
+                <span>This page confirms a certificate is genuine &mdash; it does not show the holder's NRC number, address, contact details, or any other account information.</span>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a class="btn btn-cb-outline w-100" asp-controller="Account" asp-action="Login">Sign in to CB Bank EMS &rarr;</a>
+        </div>
+    </div>
+</div>
+<div class="cb-verify-footer">
+    &copy; @DateTime.UtcNow.Year CB Bank. Public certificate verification &mdash; no personal data shown. Developed by Sunfix.
+</div>

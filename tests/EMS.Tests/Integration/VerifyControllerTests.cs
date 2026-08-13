@@ -56,6 +56,40 @@ public class VerifyControllerTests : IDisposable
     }
 
     [Fact]
+    public async Task Lookup_IsReachableWithNoSessionAndShowsACertificateNumberForm()
+    {
+        var client = _factory.CreateClient();
+
+        var html = await client.GetStringAsync("/verify");
+
+        Assert.Contains("certificateNumber", html);
+        Assert.Contains("Verify a certificate", html, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Search_WithACertificateNumber_RedirectsToItsDetailsPage()
+    {
+        SeedCertificate("CERT-VERIFY-0010", CertificateStatus.Active);
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        var response = await client.GetAsync("/verify/search?certificateNumber=CERT-VERIFY-0010");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.EndsWith("/verify/CERT-VERIFY-0010", response.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Search_WithNoCertificateNumber_RedirectsBackToTheLookupForm()
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        var response = await client.GetAsync("/verify/search?certificateNumber=");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.EndsWith("/verify", response.Headers.Location!.ToString());
+    }
+
+    [Fact]
     public async Task Details_ForAnExistingCertificate_IsReachableWithNoSessionAndReturnsSuccess()
     {
         SeedCertificate("CERT-VERIFY-0001", CertificateStatus.Active);
