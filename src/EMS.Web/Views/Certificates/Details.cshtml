@@ -28,5 +28,14 @@
         {
             <dt class="col-4">Cancelled</dt><dd class="col-8">@Model.CancelledDate?.ToString("dd MMM yyyy") - @Model.CancellationReason</dd>
         }
+        <dt class="col-4">Public verification</dt>
+        <dd class="col-8">
+            <a asp-controller="Verify" asp-action="Details" asp-route-certificateNumber="@Model.CertificateNumber" target="_blank" rel="noopener">
+                Preview public page <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+            <div class="small text-secondary-cb">
+                This is the page printed on the certificate's QR code &mdash; it shows only status, holder name, share class, quantity and issue date; never NRC, address or contact details.
+            </div>
+        </dd>
     </dl>
 </div>

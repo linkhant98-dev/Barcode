@@ -104,8 +104,11 @@ public class CertificatesController : Controller
         // factor at 1x); the visual size is then controlled explicitly via moduleWidth/moduleHeight below,
         // avoiding a double-scale that would overflow its QuestPDF container.
         var barcodeMatrix = new Code128Writer().encode(certificate.CertificateNumber, BarcodeFormat.CODE_128, 1, 1);
-        var verificationPayload = $"{certificate.CertificateNumber}|{shareholder.ShareholderNo}|{certificate.Quantity:0}";
-        var qrMatrix = new QRCodeWriter().encode(verificationPayload, BarcodeFormat.QR_CODE, 1, 1);
+        // Points at the public, unauthenticated verification page (Section: VerifyController) - scanning this
+        // with a phone camera opens the certificate's authenticity check directly, no app or login required.
+        var verificationUrl = Url.Action("Details", "Verify", new { certificateNumber = certificate.CertificateNumber }, Request.Scheme)
+            ?? certificate.CertificateNumber;
+        var qrMatrix = new QRCodeWriter().encode(verificationUrl, BarcodeFormat.QR_CODE, 1, 1);
 
         var document = Document.Create(container =>
         {

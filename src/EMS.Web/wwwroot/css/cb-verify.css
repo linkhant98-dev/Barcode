@@ -1,0 +1,93 @@
+/* Public certificate verification page (Views/Verify/Details.cshtml) - reached by scanning a certificate's
+   QR code, no sign-in required. Deliberately styled apart from the authenticated app shell since it is the
+   one page in this system a non-employee is expected to land on. */
+
+.cb-verify-topband {
+  height: 6px;
+  background: linear-gradient(90deg, var(--cb-red-500), var(--cb-gold-500), var(--cb-green-500), var(--cb-rainbow-blue));
+}
+
+.cb-verify-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-card);
+}
+
+.cb-verify-wrap {
+  min-height: calc(100vh - 6px - 63px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 36px 20px 60px;
+  background: var(--surface-page);
+}
+
+.cb-verify-card {
+  width: 100%;
+  max-width: 480px;
+}
+
+.cb-verify-status-band {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 22px 26px 18px;
+  text-align: center;
+  color: #fff;
+}
+.cb-verify-status-band.ok { background: linear-gradient(135deg, var(--cb-green-500), #146645); }
+.cb-verify-status-band.bad { background: linear-gradient(135deg, var(--cb-red-500), #7c2323); }
+.cb-verify-status-band .vs-icon { font-size: 30px; line-height: 1; margin-bottom: 6px; }
+.cb-verify-status-band .vs-title { font-size: 17px; font-weight: 800; letter-spacing: 0.01em; }
+.cb-verify-status-band .vs-sub { font-size: 12px; opacity: 0.92; margin-top: 3px; }
+
+.cb-verify-body {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 22px 26px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.cb-verify-certno {
+  font-family: var(--font-family-mono, monospace);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
+}
+
+.cb-verify-dl dt {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 13px;
+}
+.cb-verify-dl dt:first-child { margin-top: 0; }
+.cb-verify-dl dd { margin: 2px 0 0; font-size: 15px; font-weight: 650; color: var(--text-primary); }
+
+.cb-verify-scope-note {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  background: var(--cb-blue-100);
+  border: 1px solid rgba(30, 90, 168, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.cb-verify-scope-note .vsn-icon { flex: none; font-size: 15px; line-height: 1.3; }
+
+.cb-verify-footer {
+  text-align: center;
+  padding: 18px 20px 26px;
+  font-size: 11.5px;
+  color: var(--text-disabled);
+}

@@ -1,0 +1,76 @@
+@model VerifyCertificateViewModel
+@{
+    ViewData["Title"] = "Certificate Verification";
+    Layout = "_Layout";
+    var isValid = Model.Found && Model.IsCurrentlyValid;
+    var bandClass = !Model.Found ? "bad" : (isValid ? "ok" : "bad");
+    var icon = !Model.Found ? "✕" : (isValid ? "✓" : "✕");
+    string title, subtitle;
+    if (!Model.Found)
+    {
+        title = "Certificate not found";
+        subtitle = "No certificate matches this QR code or reference number.";
+    }
+    else if (isValid)
+    {
+        title = "Certificate verified";
+        subtitle = Model.Status == CertificateStatus.Uncollected
+            ? "This certificate is genuine and awaiting collection."
+            : "This certificate is genuine and currently in force.";
+    }
+    else
+    {
+        title = Model.Status == CertificateStatus.Replaced ? "Certificate replaced" : "Certificate cancelled";
+        subtitle = Model.Status == CertificateStatus.Replaced
+            ? "This certificate has been replaced by a newer one and is no longer valid."
+            : "This certificate has been cancelled and is no longer valid.";
+    }
+}
+<div class="cb-verify-topband"></div>
+<header class="cb-verify-header">
+    <span class="cb-logo-mark" style="width:30px;height:30px;"><partial name="_BrandLogo" /></span>
+    <span class="cb-wordmark" style="font-size:14px;">C&nbsp;B&nbsp;BANK</span>
+    <span class="cb-env-badge ms-auto">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+</header>
+<div class="cb-verify-wrap">
+    <div class="cb-verify-card">
+        <div class="cb-verify-status-band @bandClass">
+            <div class="vs-icon">@icon</div>
+            <div class="vs-title">@title</div>
+            <div class="vs-sub">@subtitle</div>
+        </div>
+        <div class="cb-verify-body">
+            @if (Model.Found)
+            {
+                <div class="cb-verify-certno">@Model.CertificateNumber</div>
+                <dl class="cb-verify-dl mb-0">
+                    <dt>Registered to</dt>
+                    <dd>@Model.HolderName</dd>
+                    <dt>Share class</dt>
+                    <dd>@Model.ShareClassName</dd>
+                    <dt>Number of shares</dt>
+                    <dd>@Model.Quantity.ToString("N0") shares</dd>
+                    <dt>Certificate date</dt>
+                    <dd>@Model.IssueDate.ToString("dd MMM yyyy")</dd>
+                </dl>
+                <div class="cb-verify-scope-note">
+                    <span class="vsn-icon"><i class="bi bi-info-circle"></i></span>
+                    <span>This page confirms the certificate above is genuine &mdash; it does not show the holder's NRC number, address, contact details, or any other account information.</span>
+                </div>
+            }
+            else
+            {
+                <p class="mb-0 text-secondary-cb">
+                    If you scanned this from a printed CB Bank share certificate, the certificate or the code may be damaged.
+                    Contact CB Bank Investor Relations to confirm authenticity.
+                </p>
+            }
+        </div>
+        <div class="text-center mt-3">
+            <a class="btn btn-cb-outline w-100" asp-controller="Account" asp-action="Login">Sign in to CB Bank EMS &rarr;</a>
+        </div>
+    </div>
+</div>
+<div class="cb-verify-footer">
+    &copy; @DateTime.UtcNow.Year CB Bank. Public certificate verification &mdash; no personal data shown. Developed by Sunfix.
+</div>
