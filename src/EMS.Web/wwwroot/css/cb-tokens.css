@@ -1,0 +1,32 @@
+/* CB Bank-inspired design tokens (UI Theme Guideline section 3.1). */
+:root {
+  --cb-navy-900: #003B70;
+  --cb-navy-800: #004A8F;
+  --cb-blue-600: #1E5AA8;
+  --cb-blue-100: #EAF2FB;
+  --cb-gold-500: #FDBB30;
+  --cb-gold-100: #FFF4D6;
+  --cb-red-500: #EF4F5F;
+  --cb-green-500: #39B972;
+  --cb-rainbow-blue: #2855A5;
+
+  --surface-page: #F5F7FA;
+  --surface-card: #FFFFFF;
+  --border-default: #D9E1EA;
+  --text-primary: #18324B;
+  --text-secondary: #5F7082;
+  --text-disabled: #98A6B4;
+
+  --status-pending: #D98A00;
+  --status-reverted: #7B61A8;
+
+  --shadow-card: 0 4px 16px rgba(0, 59, 112, 0.08);
+  --shadow-modal: 0 16px 48px rgba(0, 35, 70, 0.22);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --font-family-base: "Inter", "Noto Sans Myanmar", "Myanmar Text", "Segoe UI", Arial, sans-serif;
+}

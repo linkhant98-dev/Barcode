@@ -1,0 +1,103 @@
+@model CreateIssueViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "Issue Shares", Description = "New share subscription or dividend reinvestment." };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:820px;">
+    <h2 class="h6">Application</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label asp-for="ApplyType" class="cb-form-label cb-required"></label>
+            <select asp-for="ApplyType" class="form-select" asp-items="Html.GetEnumSelectList<IssueApplyType>()"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ShareholderId" class="cb-form-label cb-required"></label>
+            <select asp-for="ShareholderId" class="form-select" asp-items="@(new SelectList(ViewBag.Shareholders, "Id", "Label"))">
+                <option value="">-- select shareholder --</option>
+            </select>
+            <span asp-validation-for="ShareholderId" class="cb-field-error"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="IssueDate" class="cb-form-label cb-required"></label>
+            <input asp-for="IssueDate" class="form-control" />
+        </div>
+    </div>
+
+    <h2 class="h6">Share details</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label asp-for="ShareClassId" class="cb-form-label cb-required"></label>
+            <select asp-for="ShareClassId" class="form-select" asp-items="@(new SelectList(ViewBag.ShareClasses, "Id", "NameEn"))"></select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="NumberOfShares" class="cb-form-label cb-required"></label>
+            <input asp-for="NumberOfShares" class="form-control numeric" id="numShares" />
+            <span asp-validation-for="NumberOfShares" class="cb-field-error"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="CapitalValuePerShare" class="cb-form-label cb-required"></label>
+            <input asp-for="CapitalValuePerShare" class="form-control numeric" id="capValue" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PremiumValuePerShare" class="cb-form-label"></label>
+            <input asp-for="PremiumValuePerShare" class="form-control numeric" id="premValue" />
+        </div>
+    </div>
+
+    <div class="cb-card mb-3" style="background:var(--surface-page);">
+        <h3 class="h6">Calculation</h3>
+        <div class="row">
+            <div class="col-4">Capital amount: <strong id="calcCapital">0</strong></div>
+            <div class="col-4">Premium amount: <strong id="calcPremium">0</strong></div>
+            <div class="col-4">Total amount: <strong id="calcTotal">0</strong></div>
+        </div>
+    </div>
+
+    <h2 class="h6">Payment</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <label asp-for="CashAmount" class="cb-form-label"></label>
+            <input asp-for="CashAmount" class="form-control numeric" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ChequeAmount" class="cb-form-label"></label>
+            <input asp-for="ChequeAmount" class="form-control numeric" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ChequeNumber" class="cb-form-label"></label>
+            <input asp-for="ChequeNumber" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ChequeDate" class="cb-form-label"></label>
+            <input asp-for="ChequeDate" class="form-control" />
+        </div>
+    </div>
+    <p class="cb-help-text">Payment total (cash + cheque) must equal capital + premium amount before submission.</p>
+
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Save Draft</button>
+    </div>
+</form>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+    function recalc() {
+        var shares = parseFloat(document.getElementById('numShares').value) || 0;
+        var cap = parseFloat(document.getElementById('capValue').value) || 0;
+        var prem = parseFloat(document.getElementById('premValue').value) || 0;
+        var capitalAmount = shares * cap;
+        var premiumAmount = shares * prem;
+        document.getElementById('calcCapital').textContent = capitalAmount.toLocaleString();
+        document.getElementById('calcPremium').textContent = premiumAmount.toLocaleString();
+        document.getElementById('calcTotal').textContent = (capitalAmount + premiumAmount).toLocaleString();
+    }
+    ['numShares', 'capValue', 'premValue'].forEach(function (id) {
+        document.getElementById(id).addEventListener('input', recalc);
+    });
+    recalc();
+</script>
+}

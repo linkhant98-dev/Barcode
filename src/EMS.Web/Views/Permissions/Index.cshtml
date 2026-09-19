@@ -1,0 +1,61 @@
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Permissions",
+        Description = "Module-level permission grants per role (12.2). System Administrator always has full access and is not shown."
+    };
+    string[] roles = ViewBag.Roles;
+    string[] keys = ViewBag.PermissionKeys;
+    HashSet<string> grants = ViewBag.Grants;
+
+    string Label(string key) => key switch
+    {
+        "SA.Submit" => "Submit Applications",
+        "IS.Submit" => "Submit Issue Shares",
+        "TS.Submit" => "Submit Transfer Shares",
+        "BS.Submit" => "Submit Bonus Shares",
+        "DS.Submit" => "Submit Dividends",
+        "Reports.View" => "View Reports",
+        "Reports.Export" => "Export Reports",
+        "Reports.ViewSensitiveData" => "View Sensitive Data",
+        _ => key
+    };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+<form asp-action="Save" method="post">
+    <div class="cb-table-card">
+        <div class="cb-table-responsive">
+            <table class="cb-table">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        @foreach (var key in keys)
+                        {
+                            <th class="text-center">@Label(key)</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var role in roles)
+                    {
+                        <tr>
+                            <td>@role</td>
+                            @foreach (var key in keys)
+                            {
+                                var checkedAttr = grants.Contains($"{role}|{key}");
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input" name="grants" value="@role|@key" checked="@checkedAttr" />
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="cb-page-actions">
+        <button type="submit" class="btn btn-cb-primary">Save Permissions</button>
+    </div>
+</form>

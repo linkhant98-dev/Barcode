@@ -1,0 +1,45 @@
+@model List<EMS.Domain.Applications.ShareholderApplication>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Shareholder Applications",
+        Description = $"{Model.Count} application(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
+        PrimaryAction = new PageAction("New Application", Url.Action("Create")!, "primary", "bi-plus-lg")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Type</th>
+                    <th>Applicant</th>
+                    <th>Submitted</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6"><div class="cb-empty-state">No applications found. <a asp-action="Create">Create a new application</a>.</div></td></tr>
+                }
+                @foreach (var app in Model)
+                {
+                    <tr>
+                        <td>@app.ApplicationNo</td>
+                        <td>@app.Type</td>
+                        <td>@(app.Type == EMS.Domain.Common.ApplicantType.Corporate ? app.LegalNameEn : app.NameEn)</td>
+                        <td>@(app.SubmittedDate?.ToString("dd MMM yyyy") ?? "-")</td>
+                        <td><partial name="_StatusBadge" model="@app.Status.ToString()" /></td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Edit" asp-route-id="@app.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

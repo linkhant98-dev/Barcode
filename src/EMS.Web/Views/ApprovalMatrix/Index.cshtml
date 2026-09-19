@@ -1,0 +1,40 @@
+@model List<EMS.Domain.Workflow.ApprovalMatrixRule>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Approval Matrix",
+        Description = "Configurable route by module, sequence and approver role.",
+        PrimaryAction = new PageAction("New Rule", Url.Action("Create")!, "primary", "bi-plus-lg")
+    };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+@foreach (var moduleGroup in Model.GroupBy(r => r.Module))
+{
+    <h2 class="h6 mt-3">@moduleGroup.Key</h2>
+    <div class="cb-table-card mb-3">
+        <div class="cb-table-responsive">
+            <table class="cb-table">
+                <thead><tr><th>Step</th><th>Approver Role</th><th>Sequence</th><th>Mandatory</th><th>Effective From</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var rule in moduleGroup.OrderBy(r => r.Sequence))
+                    {
+                        <tr>
+                            <td>@rule.StepName</td>
+                            <td>@rule.ApproverRole</td>
+                            <td>@rule.Sequence</td>
+                            <td>@(rule.IsMandatory ? "Yes" : "No")</td>
+                            <td>@rule.EffectiveFrom.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <form asp-action="Deactivate" asp-route-id="@rule.Id" method="post" onsubmit="return confirm('Deactivate this rule?');">
+                                    <button type="submit" class="btn btn-cb-danger btn-sm">Deactivate</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

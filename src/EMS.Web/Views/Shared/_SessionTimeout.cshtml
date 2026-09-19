@@ -1,0 +1,56 @@
+@* Section 20 - warn the user before session expiry (cookie ExpireTimeSpan = 20 minutes, see Program.cs). *@
+<div class="modal fade" id="cb-session-modal" tabindex="-1" aria-labelledby="cb-session-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cb-session-modal-label">Your session is about to expire</h5>
+            </div>
+            <div class="modal-body">
+                <p>You will be signed out in <span id="cb-session-countdown">120</span> seconds due to inactivity.</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="Account" asp-action="Logout" method="post" class="me-auto">
+                    <button type="submit" class="btn btn-cb-outline btn-sm">Sign out now</button>
+                </form>
+                <button type="button" class="btn btn-cb-primary btn-sm" id="cb-session-stay">Stay signed in</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        var warnAfterMs = 18 * 60 * 1000;
+        var expireAfterMs = 20 * 60 * 1000;
+        var warnTimer, expireTimer, countdownInterval;
+
+        function resetTimers() {
+            clearTimeout(warnTimer);
+            clearTimeout(expireTimer);
+            clearInterval(countdownInterval);
+            warnTimer = setTimeout(showWarning, warnAfterMs);
+        }
+
+        function showWarning() {
+            var seconds = Math.round((expireAfterMs - warnAfterMs) / 1000);
+            document.getElementById('cb-session-countdown').textContent = seconds;
+            var modalEl = document.getElementById('cb-session-modal');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            countdownInterval = setInterval(function () {
+                seconds -= 1;
+                document.getElementById('cb-session-countdown').textContent = seconds;
+                if (seconds <= 0) clearInterval(countdownInterval);
+            }, 1000);
+            expireTimer = setTimeout(function () { window.location.href = '/Account/Logout'; }, expireAfterMs - warnAfterMs);
+        }
+
+        document.getElementById('cb-session-stay')?.addEventListener('click', function () {
+            fetch('/Account/Ping', { method: 'POST' }).finally(function () {
+                bootstrap.Modal.getInstance(document.getElementById('cb-session-modal'))?.hide();
+                resetTimers();
+            });
+        });
+
+        resetTimers();
+    })();
+</script>

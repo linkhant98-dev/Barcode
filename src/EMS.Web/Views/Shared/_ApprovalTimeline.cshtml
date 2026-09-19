@@ -1,0 +1,49 @@
+@using EMS.Domain.Workflow
+@model ApprovalInstance
+@{
+    string CssClass(ApprovalStep step) => step.Status switch
+    {
+        ApprovalStepStatus.Approved => "done",
+        ApprovalStepStatus.Pending => "current",
+        ApprovalStepStatus.Rejected => "rejected",
+        ApprovalStepStatus.Reverted => "reverted",
+        _ => ""
+    };
+    string Icon(ApprovalStep step) => step.Status switch
+    {
+        ApprovalStepStatus.Approved => "bi-check-lg",
+        ApprovalStepStatus.Pending => "bi-hourglass-split",
+        ApprovalStepStatus.Rejected => "bi-x-lg",
+        ApprovalStepStatus.Reverted => "bi-arrow-return-left",
+        _ => "bi-dash"
+    };
+}
+<ul class="cb-timeline">
+    @foreach (var step in Model.Steps.OrderBy(s => s.Sequence))
+    {
+        <li class="@CssClass(step)">
+            <span class="cb-timeline-dot"><i class="bi @Icon(step)"></i></span>
+            <div class="d-flex justify-content-between">
+                <strong>@step.StepName</strong>
+                <span class="text-secondary-cb small">
+                    @(step.Status switch
+                    {
+                        ApprovalStepStatus.Approved => "Approved",
+                        ApprovalStepStatus.Pending => "Pending",
+                        ApprovalStepStatus.Rejected => "Rejected",
+                        ApprovalStepStatus.Reverted => "Reverted",
+                        _ => "Waiting"
+                    })
+                </span>
+            </div>
+            @if (step.DecisionAtUtc is not null)
+            {
+                <div class="small text-secondary-cb">@step.DecisionAtUtc?.ToString("dd MMM yyyy HH:mm")</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(step.Comment))
+            {
+                <div class="small mt-1">"@step.Comment"</div>
+            }
+        </li>
+    }
+</ul>

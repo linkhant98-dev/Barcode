@@ -1,0 +1,34 @@
+@model List<EMS.Domain.Workflow.ApprovalStep>
+@{
+    var header = new PageHeaderViewModel { Title = "My Pending Approvals", Description = $"{Model.Count} item(s) awaiting your decision" };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+@if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Age</th><th>Reference</th><th>Module</th><th>Submitted by</th><th>Step</th><th></th></tr></thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6"><div class="cb-empty-state">Nothing waiting on you right now.</div></td></tr>
+                }
+                @foreach (var step in Model)
+                {
+                    var instance = step.ApprovalInstance!;
+                    var age = DateTime.UtcNow - instance.SubmittedAtUtc;
+                    <tr>
+                        <td>@(age.Days > 0 ? $"{age.Days}d" : $"{age.Hours}h")</td>
+                        <td>@instance.EntityReference</td>
+                        <td>@instance.EntityType</td>
+                        <td>@instance.SubmittedByUserId</td>
+                        <td>@step.StepName</td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Review" asp-route-id="@step.Id">Review</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

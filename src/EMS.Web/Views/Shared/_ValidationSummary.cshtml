@@ -1,0 +1,18 @@
+@{
+    var hasErrors = !ViewData.ModelState.IsValid;
+}
+@if (hasErrors)
+{
+    <div class="cb-error-summary" role="alert" tabindex="-1" id="cb-error-summary">
+        <strong>Please correct the following before submitting:</strong>
+        <ul class="mb-0 mt-2">
+            @foreach (var entry in ViewData.ModelState)
+            {
+                foreach (var error in entry.Value!.Errors)
+                {
+                    <li><a href="#@entry.Key">@error.ErrorMessage</a></li>
+                }
+            }
+        </ul>
+    </div>
+}
