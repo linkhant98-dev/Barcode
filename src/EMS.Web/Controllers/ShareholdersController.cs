@@ -1,3 +1,5 @@
+using EMS.Application.Abstractions;
+using EMS.Application.Shareholders;
 using EMS.Domain.Common;
 using EMS.Infrastructure.Persistence;
 using EMS.Web.Models;
@@ -13,8 +15,15 @@ namespace EMS.Web.Controllers;
 public class ShareholdersController : Controller
 {
     private readonly EmsDbContext _db;
+    private readonly IShareholderRegistrationService _registration;
+    private readonly IPermissionService _permissions;
 
-    public ShareholdersController(EmsDbContext db) => _db = db;
+    public ShareholdersController(EmsDbContext db, IShareholderRegistrationService registration, IPermissionService permissions)
+    {
+        _db = db;
+        _registration = registration;
+        _permissions = permissions;
+    }
 
     public async Task<IActionResult> Index(string? q, CancellationToken ct)
     {
@@ -89,5 +98,20 @@ public class ShareholdersController : Controller
         };
 
         return View(vm);
+    }
+
+    /// <summary>4.1.1 / approval step 7 - files the Board/CBM approval letters, promoting the Temporary ID
+    /// to Permanent. A manual action gated by Permissions.PromotePermanentShareholderId (the "CBM Recording
+    /// User" role), not an in-system workflow step - see the remark on the same permission constant.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PromoteToPermanentId(long id, CancellationToken ct)
+    {
+        if (!await _permissions.CurrentUserHasPermissionAsync(Permissions.PromotePermanentShareholderId, ct))
+            return Forbid();
+
+        await _registration.PromoteToPermanentIdAsync(id, ct);
+        TempData["Success"] = "Permanent Shareholder ID recorded.";
+        return RedirectToAction(nameof(Details), new { id });
     }
 }

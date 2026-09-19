@@ -16,7 +16,9 @@ public record ApprovalDecisionRequest(
     long ApprovalStepId,
     ApprovalDecision Decision,
     string? Comment,
-    long EntityVersionSeenByApprover);
+    long EntityVersionSeenByApprover,
+    /// <summary>Required when Decision is CaseTransfer - the approver role the pending step is reassigned to.</summary>
+    string? TransferToRole = null);
 
 public record WorkflowResult(bool Success, WorkflowStatus NewStatus, string? Error = null);
 
@@ -31,10 +33,17 @@ public interface IWorkflowService
     Task<ApprovalInstance> SubmitForApprovalAsync(SubmitForApprovalRequest request, CancellationToken ct = default);
 
     /// <summary>
-    /// Applies Approve/Reject/Revert/RequestInformation/Delegate to the current pending step, enforcing
-    /// maker-checker (COM-011) and mandatory-comment rules for Reject/Revert (11.1).
+    /// Applies Approve/Reject/Revert/RequestInformation/Delegate/CaseTransfer to the current pending step,
+    /// enforcing maker-checker (COM-011) and mandatory-comment rules for Reject/Revert (11.1).
     /// </summary>
     Task<WorkflowResult> DecideAsync(ApprovalDecisionRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// 3.4 "First Approver" Recall action - only the original submitter may call this. Pulls the current
+    /// pending step back so its previously-assigned approver can no longer act on it, and (when a role is
+    /// supplied) immediately reassigns it to the correct approver role in the same motion.
+    /// </summary>
+    Task<WorkflowResult> RecallAsync(long approvalInstanceId, string? reassignToRole, string? comment, CancellationToken ct = default);
 
     Task<ApprovalInstance?> GetActiveInstanceAsync(string entityType, long entityId, CancellationToken ct = default);
 }

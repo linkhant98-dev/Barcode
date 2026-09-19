@@ -19,6 +19,11 @@ public class Shareholder : AuditableEntity
     public DateOnly? KycApprovalDate { get; set; }
     public RiskRating RiskRating { get; set; } = RiskRating.Low;
 
+    /// <summary>4.1.1 - a Shareholder is created with a Temporary ID right after KYC approval; ShareholderNo only
+    /// becomes the Permanent Shareholder ID once CBM approval (the matrix's final, conditional step) is recorded.</summary>
+    public bool IsPermanentId { get; set; }
+    public DateOnly? PermanentIdDate { get; set; }
+
     public long? SourceApplicationId { get; set; }
 
     public Person? Person { get; set; }
@@ -70,6 +75,12 @@ public class Corporate
     public string LegalForm { get; set; } = string.Empty;
     public string? TaxIdentifier { get; set; }
     public string ContactPersonName { get; set; } = string.Empty;
+    public DateOnly? DateOfIncorporation { get; set; }
+    public string? TypeOfInstitution { get; set; }
+    public string? NatureOfBusiness { get; set; }
+    public string? SourceOfFund { get; set; }
+    public decimal? PaidUpCapital { get; set; }
+    public DateOnly? BoardResolutionDate { get; set; }
 
     public ICollection<CorporateSignatory> Signatories { get; set; } = new List<CorporateSignatory>();
     public ICollection<BeneficialOwner> BeneficialOwners { get; set; } = new List<BeneficialOwner>();
@@ -84,6 +95,8 @@ public class CorporateSignatory
     public string Position { get; set; } = string.Empty;
     public bool IsAuthorizedSigner { get; set; }
     public bool IsDirector { get; set; }
+    public string? NrcNumber { get; set; }
+    public string? ResidentialAddress { get; set; }
 }
 
 /// <summary>6.3 beneficial owner declaration - total percentages must equal 100% when required.</summary>

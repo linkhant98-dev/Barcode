@@ -26,4 +26,8 @@ public interface IKycService
 public interface IShareholderRegistrationService
 {
     Task<long> RegisterFromApplicationAsync(long applicationId, CancellationToken ct = default);
+
+    /// <summary>4.1.1 / approval step 7 - files the Board/CBM approval letters, changing the Shareholder's
+    /// Temporary ID (TSH-prefixed) to its Permanent form (SH-prefixed). Idempotent.</summary>
+    Task PromoteToPermanentIdAsync(long shareholderId, CancellationToken ct = default);
 }

@@ -130,14 +130,17 @@ public enum DividendSettlementMethod
     Reinvestment
 }
 
-/// <summary>Section 11 - Approve, Reject, Revert, Request Information, Delegate.</summary>
+/// <summary>Section 11 / 3.4 - Approve, Reject, Revert, Request Information, Delegate, Case-Transfer, Recall.</summary>
 public enum ApprovalDecision
 {
     Approve,
     Reject,
     Revert,
     RequestInformation,
-    Delegate
+    Delegate,
+    /// <summary>3.4 "Next Approver" action - reassigns the pending step to a different approver role, unlike
+    /// Delegate (which hands the same step to a specific person within the same role).</summary>
+    CaseTransfer
 }
 
 public enum ApprovalStepStatus
@@ -147,7 +150,10 @@ public enum ApprovalStepStatus
     Approved,
     Rejected,
     Reverted,
-    Skipped
+    Skipped,
+    /// <summary>3.4 "First Approver" Recall action - the submitter pulled this step back because it was
+    /// assigned to the wrong approver; the previously-assigned approver can no longer act on it.</summary>
+    Recalled
 }
 
 public enum ApprovalStageMode

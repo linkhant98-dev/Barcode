@@ -52,6 +52,20 @@ public class EditApplicationViewModel
     public string? LegalForm { get; set; }
     [Display(Name = "Tax identifier")]
     public string? TaxIdentifier { get; set; }
+    [Display(Name = "Date of incorporation")]
+    [DataType(DataType.Date)]
+    public DateOnly? DateOfIncorporation { get; set; }
+    [Display(Name = "Type of institution")]
+    public string? TypeOfInstitution { get; set; }
+    [Display(Name = "Nature of business")]
+    public string? NatureOfBusiness { get; set; }
+    [Display(Name = "Source of fund")]
+    public string? SourceOfFund { get; set; }
+    [Display(Name = "Paid-up capital (MMK)")]
+    public decimal? PaidUpCapital { get; set; }
+    [Display(Name = "Board resolution dated")]
+    [DataType(DataType.Date)]
+    public DateOnly? BoardResolutionDate { get; set; }
 
     // Address / contact
     [Display(Name = "Address line 1")]
@@ -64,11 +78,37 @@ public class EditApplicationViewModel
     public string? Email { get; set; }
 
     public List<ApplicationJointHolderRow> JointHolders { get; set; } = new();
+
+    // Corporate sub-tables (6.3 Categories 3/4/6 - "can add new row with add row button")
+    public List<ApplicationDirectorRow> Directors { get; set; } = new();
+    public List<ApplicationAuthorizedSignerRow> AuthorizedSigners { get; set; } = new();
+    public List<ApplicationBeneficialOwnerRow> BeneficialOwners { get; set; } = new();
 }
 
 public class ApplicationJointHolderRow
 {
     public string NameEn { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public decimal OwnershipPercentage { get; set; }
+}
+
+public class ApplicationDirectorRow
+{
+    public string Name { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public string ResidentialAddress { get; set; } = string.Empty;
+}
+
+public class ApplicationAuthorizedSignerRow
+{
+    public string Name { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public string Designation { get; set; } = string.Empty;
+}
+
+public class ApplicationBeneficialOwnerRow
+{
+    public string OwnerName { get; set; } = string.Empty;
     public string NrcNumber { get; set; } = string.Empty;
     public decimal OwnershipPercentage { get; set; }
 }

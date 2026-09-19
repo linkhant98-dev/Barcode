@@ -26,6 +26,13 @@ public class MasterDataController : Controller
         ViewBag.Types = Types;
         ViewBag.SelectedType = type;
 
+        if (type == "ShareholderGroup")
+        {
+            // 3.1 - only main groups (no ParentGroupId) can themselves be picked as a Main group for a new sub group.
+            ViewBag.MainGroupOptions = await _db.ShareholderGroups.Where(g => g.IsActive && g.ParentGroupId == null)
+                .OrderBy(g => g.Code).ToListAsync(ct);
+        }
+
         var items = await GetItemsAsync(type, ct);
         return View(items);
     }
@@ -36,7 +43,7 @@ public class MasterDataController : Controller
     {
         MasterDataEntity entity = model.Type switch
         {
-            "ShareholderGroup" => new ShareholderGroup(),
+            "ShareholderGroup" => new ShareholderGroup { ParentGroupId = model.ParentGroupId },
             "ShareClass" => new ShareClass(),
             "Department" => new Department(),
             "BankBranch" => new BankBranch { Address = "-" },
@@ -77,7 +84,8 @@ public class MasterDataController : Controller
 
     private async Task<List<MasterDataEntity>> GetItemsAsync(string type, CancellationToken ct) => type switch
     {
-        "ShareholderGroup" => (await _db.ShareholderGroups.OrderBy(x => x.Code).ToListAsync(ct)).Cast<MasterDataEntity>().ToList(),
+        "ShareholderGroup" => (await _db.ShareholderGroups.Include(g => g.ParentGroup)
+            .OrderBy(x => x.ParentGroupId == null ? 0 : 1).ThenBy(x => x.Code).ToListAsync(ct)).Cast<MasterDataEntity>().ToList(),
         "ShareClass" => (await _db.ShareClasses.OrderBy(x => x.Code).ToListAsync(ct)).Cast<MasterDataEntity>().ToList(),
         "Department" => (await _db.Departments.OrderBy(x => x.Code).ToListAsync(ct)).Cast<MasterDataEntity>().ToList(),
         "BankBranch" => (await _db.BankBranches.OrderBy(x => x.Code).ToListAsync(ct)).Cast<MasterDataEntity>().ToList(),

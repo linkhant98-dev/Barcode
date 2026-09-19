@@ -22,20 +22,33 @@
 
                 <div class="mb-3">
                     <label class="cb-form-label cb-required">@Localizer["Decision"]</label>
-                    <div class="d-flex gap-3">
+                    <div class="d-flex gap-3 flex-wrap">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="decision" id="decApprove" value="@EMS.Domain.Common.ApprovalDecision.Approve" checked />
+                            <input class="form-check-input" type="radio" name="decision" id="decApprove" value="@EMS.Domain.Common.ApprovalDecision.Approve" checked onchange="toggleTransferRole()" />
                             <label class="form-check-label" for="decApprove">@Localizer["Approve"]</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="decision" id="decReject" value="@EMS.Domain.Common.ApprovalDecision.Reject" />
+                            <input class="form-check-input" type="radio" name="decision" id="decReject" value="@EMS.Domain.Common.ApprovalDecision.Reject" onchange="toggleTransferRole()" />
                             <label class="form-check-label" for="decReject">@Localizer["Reject"]</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="decision" id="decRevert" value="@EMS.Domain.Common.ApprovalDecision.Revert" />
+                            <input class="form-check-input" type="radio" name="decision" id="decRevert" value="@EMS.Domain.Common.ApprovalDecision.Revert" onchange="toggleTransferRole()" />
                             <label class="form-check-label" for="decRevert">@Localizer["Revert"]</label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="decision" id="decCaseTransfer" value="@EMS.Domain.Common.ApprovalDecision.CaseTransfer" onchange="toggleTransferRole()" />
+                            <label class="form-check-label" for="decCaseTransfer">Case-Transfer</label>
+                        </div>
                     </div>
+                </div>
+
+                <div class="mb-3 d-none" id="transferRoleField">
+                    <label class="cb-form-label cb-required">Transfer to</label>
+                    <select name="transferToRole" class="form-select">
+                        <option>DGM</option><option>Legal</option><option>DMD</option><option>Managing Director</option>
+                        <option>CEO</option><option>Vice Chairman</option><option>Board of Directors</option><option>CBM</option>
+                    </select>
+                    <div class="cb-help-text">The current approver can no longer act on this case once transferred.</div>
                 </div>
 
                 <div class="mb-3">
@@ -49,6 +62,12 @@
                     <button type="submit" class="btn btn-cb-primary">@Localizer["SubmitDecision"]</button>
                 </div>
             </form>
+            <script>
+                function toggleTransferRole() {
+                    var isTransfer = document.getElementById('decCaseTransfer').checked;
+                    document.getElementById('transferRoleField').classList.toggle('d-none', !isTransfer);
+                }
+            </script>
         </div>
     </div>
     <div class="col-lg-5">

@@ -17,6 +17,10 @@ public static class Permissions
     public const string ReportsExport = "Reports.Export";
     public const string ReportsViewSensitiveData = "Reports.ViewSensitiveData";
 
+    /// <summary>4.1.1 / approval step 7 - files the Board/CBM approval letters and promotes the Shareholder's
+    /// Temporary ID to Permanent. A manual, offline-approval-driven action, not an in-system workflow step.</summary>
+    public const string PromotePermanentShareholderId = "SH.PromotePermanentId";
+
     public static readonly string[] All =
     [
         SubmitShareholderApplication,
@@ -26,6 +30,7 @@ public static class Permissions
         SubmitDividend,
         ReportsView,
         ReportsExport,
-        ReportsViewSensitiveData
+        ReportsViewSensitiveData,
+        PromotePermanentShareholderId
     ];
 }

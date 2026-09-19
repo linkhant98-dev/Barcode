@@ -31,6 +31,47 @@ public class DbSeederTests
     }
 
     [Fact]
+    public async Task SeedAsync_ShareholderGroups_SeedsTheFullMainSubHierarchyKeepingTheOriginalCodes()
+    {
+        using var host = new IdentityTestHost();
+
+        await DbSeeder.SeedAsync(host.Services, seedDemoData: false);
+
+        var groups = await host.Context.ShareholderGroups.ToListAsync();
+        Assert.Equal(29, groups.Count); // 7 standalone/main + 22 sub groups
+        // Codes SeedDemoTransactionsAsync/SeedSampleActivityAsync (and the tests that call them directly)
+        // resolve by exact Code string, so the original flat-seed codes must still exist unchanged.
+        foreach (var code in new[] { "BOD", "STAFF", "MANAGEMENT", "PUBLIC_COMPANY", "COOPERATIVE", "PERSONAL" })
+            Assert.Contains(groups, g => g.Code == code);
+
+        var states = groups.Single(g => g.Code == "STATES_DIV_COOP");
+        Assert.Null(states.ParentGroupId);
+        var yangonCoop = groups.Single(g => g.Code == "YANGON_COOP");
+        Assert.Equal(states.Id, yangonCoop.ParentGroupId);
+        var bod = groups.Single(g => g.Code == "BOD");
+        Assert.Null(bod.ParentGroupId); // B.O.D stands alone - no sub groups of its own
+    }
+
+    [Fact]
+    public async Task SeedAsync_ApprovalMatrix_SeedsTheFullChainWithoutACbmStepAndGrantsTheRecordingPermission()
+    {
+        using var host = new IdentityTestHost();
+
+        await DbSeeder.SeedAsync(host.Services, seedDemoData: false);
+
+        var isRules = await host.Context.ApprovalMatrixRules.Where(r => r.Module == "IS").OrderBy(r => r.Sequence).ToListAsync();
+        Assert.Equal(8, isRules.Count);
+        Assert.Equal(2, isRules.Count(r => r.ApproverRole == "DGM Approver")); // initial review + final confirmation
+        Assert.DoesNotContain(isRules, r => r.StepName.Contains("CBM")); // CBM is filed manually, not a workflow step
+        Assert.Equal("Board of Directors", isRules[^1].StepName);
+        Assert.Contains(isRules, r => r.StageMode == EMS.Domain.Common.ApprovalStageMode.ParallelAny); // DMD/MD/CEO/VC are not strictly sequential
+
+        var grant = await host.Context.RolePermissions.SingleOrDefaultAsync(p =>
+            p.RoleName == "CBM Recording User" && p.PermissionKey == EMS.Application.Abstractions.Permissions.PromotePermanentShareholderId);
+        Assert.NotNull(grant);
+    }
+
+    [Fact]
     public async Task SeedAsync_CalledTwice_DoesNotDuplicateRolesOrTheAdminUser()
     {
         using var host = new IdentityTestHost();

@@ -79,7 +79,9 @@ public class ShareholderApplicationsController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(long id, CancellationToken ct)
     {
-        var application = await _db.ShareholderApplications.Include(a => a.JointHolders).Include(a => a.KycCase)
+        var application = await _db.ShareholderApplications
+            .Include(a => a.JointHolders).Include(a => a.KycCase)
+            .Include(a => a.Directors).Include(a => a.AuthorizedSigners).Include(a => a.BeneficialOwners)
             .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (application is null) return NotFound();
 
@@ -105,6 +107,12 @@ public class ShareholderApplicationsController : Controller
             CorporateRegistrationDate = application.CorporateRegistrationDate,
             LegalForm = application.LegalForm,
             TaxIdentifier = application.TaxIdentifier,
+            DateOfIncorporation = application.DateOfIncorporation,
+            TypeOfInstitution = application.TypeOfInstitution,
+            NatureOfBusiness = application.NatureOfBusiness,
+            SourceOfFund = application.SourceOfFund,
+            PaidUpCapital = application.PaidUpCapital,
+            BoardResolutionDate = application.BoardResolutionDate,
             AddressLine1 = application.AddressLine1,
             Township = application.Township,
             City = application.City,
@@ -116,17 +124,46 @@ public class ShareholderApplicationsController : Controller
                 NameEn = j.NameEn,
                 NrcNumber = j.NrcNumber,
                 OwnershipPercentage = j.OwnershipPercentage
-            }).ToList()
+            }).ToList(),
+            Directors = Pad(application.Directors.Select(d => new ApplicationDirectorRow
+            {
+                Name = d.Name,
+                NrcNumber = d.NrcNumber,
+                ResidentialAddress = d.ResidentialAddress
+            }).ToList(), 3),
+            AuthorizedSigners = Pad(application.AuthorizedSigners.Select(a => new ApplicationAuthorizedSignerRow
+            {
+                Name = a.Name,
+                NrcNumber = a.NrcNumber,
+                Designation = a.Designation
+            }).ToList(), 3),
+            BeneficialOwners = Pad(application.BeneficialOwners.Select(o => new ApplicationBeneficialOwnerRow
+            {
+                OwnerName = o.OwnerName,
+                NrcNumber = o.NrcNumber,
+                OwnershipPercentage = o.OwnershipPercentage
+            }).ToList(), 3)
         };
 
         return View(vm);
+    }
+
+    /// <summary>Blueprint 4.1.3.3 Categories 3/4/6 rows can "add new row with add row button"; the web form
+    /// renders a handful of blank slots up front instead (simpler and more robust than JS list-index
+    /// management), and blank rows are dropped again on save (see MapToEntity).</summary>
+    private static List<T> Pad<T>(List<T> rows, int minCount) where T : new()
+    {
+        while (rows.Count < minCount) rows.Add(new T());
+        return rows;
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveDraft(EditApplicationViewModel model, CancellationToken ct)
     {
-        var application = await _db.ShareholderApplications.FindAsync([model.Id], ct);
+        var application = await _db.ShareholderApplications
+            .Include(a => a.Directors).Include(a => a.AuthorizedSigners).Include(a => a.BeneficialOwners)
+            .FirstOrDefaultAsync(a => a.Id == model.Id, ct);
         if (application is null) return NotFound();
 
         MapToEntity(model, application);
@@ -170,11 +207,30 @@ public class ShareholderApplicationsController : Controller
         entity.CorporateRegistrationDate = model.CorporateRegistrationDate;
         entity.LegalForm = model.LegalForm;
         entity.TaxIdentifier = model.TaxIdentifier;
+        entity.DateOfIncorporation = model.DateOfIncorporation;
+        entity.TypeOfInstitution = model.TypeOfInstitution;
+        entity.NatureOfBusiness = model.NatureOfBusiness;
+        entity.SourceOfFund = model.SourceOfFund;
+        entity.PaidUpCapital = model.PaidUpCapital;
+        entity.BoardResolutionDate = model.BoardResolutionDate;
         entity.AddressLine1 = model.AddressLine1;
         entity.Township = model.Township;
         entity.City = model.City;
         entity.StateRegion = model.StateRegion;
         entity.Mobile = model.Mobile;
         entity.Email = model.Email;
+
+        // Corporate sub-tables: replace-in-place from the posted rows, dropping blank slots (Pad above).
+        entity.Directors.Clear();
+        foreach (var d in model.Directors.Where(d => !string.IsNullOrWhiteSpace(d.Name)))
+            entity.Directors.Add(new Domain.Applications.ApplicationDirector { Name = d.Name, NrcNumber = d.NrcNumber, ResidentialAddress = d.ResidentialAddress });
+
+        entity.AuthorizedSigners.Clear();
+        foreach (var a in model.AuthorizedSigners.Where(a => !string.IsNullOrWhiteSpace(a.Name)))
+            entity.AuthorizedSigners.Add(new Domain.Applications.ApplicationAuthorizedSigner { Name = a.Name, NrcNumber = a.NrcNumber, Designation = a.Designation });
+
+        entity.BeneficialOwners.Clear();
+        foreach (var o in model.BeneficialOwners.Where(o => !string.IsNullOrWhiteSpace(o.OwnerName)))
+            entity.BeneficialOwners.Add(new Domain.Applications.ApplicationBeneficialOwner { OwnerName = o.OwnerName, NrcNumber = o.NrcNumber, OwnershipPercentage = o.OwnershipPercentage });
     }
 }

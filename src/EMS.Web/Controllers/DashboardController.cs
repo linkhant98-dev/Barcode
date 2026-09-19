@@ -12,9 +12,9 @@ public class DashboardController : Controller
 
     public DashboardController(IDashboardService dashboardService) => _dashboardService = dashboardService;
 
-    public async Task<IActionResult> Index(DateOnly? asOf, CancellationToken ct)
+    public async Task<IActionResult> Index(DateOnly? asOf, long? groupId, CancellationToken ct)
     {
-        var data = await _dashboardService.GetDashboardAsync(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, asOf, ct);
+        var data = await _dashboardService.GetDashboardAsync(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, asOf, groupId, ct);
         return View(data);
     }
 }

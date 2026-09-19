@@ -78,13 +78,13 @@ public class ApprovalsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Decide(long approvalStepId, ApprovalDecision decision, string? comment, CancellationToken ct)
+    public async Task<IActionResult> Decide(long approvalStepId, ApprovalDecision decision, string? comment, string? transferToRole, CancellationToken ct)
     {
         var step = await _db.ApprovalSteps.Include(s => s.ApprovalInstance).FirstOrDefaultAsync(s => s.Id == approvalStepId, ct);
         if (step?.ApprovalInstance is null) return NotFound();
 
         var instance = step.ApprovalInstance;
-        var result = await _workflow.DecideAsync(new ApprovalDecisionRequest(approvalStepId, decision, comment, 0), ct);
+        var result = await _workflow.DecideAsync(new ApprovalDecisionRequest(approvalStepId, decision, comment, 0, transferToRole), ct);
 
         if (!result.Success)
         {
@@ -97,6 +97,18 @@ public class ApprovalsController : Controller
 
         TempData["Success"] = $"Decision recorded: {decision}.";
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>3.4 "First Approver" Recall - the submitter pulls the case back and reassigns it in one motion.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Recall(long approvalInstanceId, string reassignToRole, string? comment, CancellationToken ct)
+    {
+        var result = await _workflow.RecallAsync(approvalInstanceId, reassignToRole, comment, ct);
+        TempData[result.Success ? "Success" : "Error"] = result.Success
+            ? $"Case recalled and reassigned to {reassignToRole}."
+            : result.Error;
+        return RedirectToAction(nameof(SubmittedByMe));
     }
 
     /// <summary>Dispatches to the module-specific posting service once the full approval chain completes.</summary>

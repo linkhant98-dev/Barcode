@@ -37,6 +37,18 @@ public class ReferenceNumberService : IReferenceNumberService
 
     public async Task<string> NextShareholderNoAsync(CancellationToken ct = default)
     {
+        var core = await NextShareholderCoreAsync(ct);
+        return $"SH-{core}";
+    }
+
+    public async Task<string> NextTemporaryShareholderNoAsync(CancellationToken ct = default)
+    {
+        var core = await NextShareholderCoreAsync(ct);
+        return $"TSH{core}";
+    }
+
+    private async Task<string> NextShareholderCoreAsync(CancellationToken ct)
+    {
         var year = DateTime.UtcNow.Year;
         var sequence = await _db.NumberSequences.FirstOrDefaultAsync(s => s.Module == "SH" && s.Year == year, ct);
         if (sequence is null)
@@ -49,7 +61,7 @@ public class ReferenceNumberService : IReferenceNumberService
         await _db.SaveChangesAsync(ct);
 
         var yy = year % 100;
-        return $"SH-{yy:D2}{sequence.LastValue:D7}";
+        return $"{yy:D2}{sequence.LastValue:D7}";
     }
 
     public Task<string> NextCertificateNoAsync(CancellationToken ct = default) => NextAsync("CERT", null, ct);

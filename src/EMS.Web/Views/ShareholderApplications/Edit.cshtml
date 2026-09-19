@@ -100,6 +100,91 @@
                     <label asp-for="TaxIdentifier" class="cb-form-label"></label>
                     <input asp-for="TaxIdentifier" class="form-control" />
                 </div>
+                <div class="col-md-4">
+                    <label asp-for="DateOfIncorporation" class="cb-form-label"></label>
+                    <input asp-for="DateOfIncorporation" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TypeOfInstitution" class="cb-form-label"></label>
+                    <input asp-for="TypeOfInstitution" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NatureOfBusiness" class="cb-form-label"></label>
+                    <input asp-for="NatureOfBusiness" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SourceOfFund" class="cb-form-label"></label>
+                    <input asp-for="SourceOfFund" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PaidUpCapital" class="cb-form-label"></label>
+                    <input asp-for="PaidUpCapital" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BoardResolutionDate" class="cb-form-label"></label>
+                    <input asp-for="BoardResolutionDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Board of Directors / Principal Officers</h2>
+            <p class="cb-help-text">Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Name</th><th>NRC No.</th><th>Residential address</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Directors.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="Directors[i].Name" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="Directors[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="Directors[i].ResidentialAddress" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Authorized Persons to Operate the Account</h2>
+            <p class="cb-help-text">Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Name</th><th>NRC No.</th><th>Designation</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.AuthorizedSigners.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="AuthorizedSigners[i].Name" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="AuthorizedSigners[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="AuthorizedSigners[i].Designation" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Company Ownership</h2>
+            <p class="cb-help-text">Percentages should total 100%. Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Owner name</th><th>NRC No.</th><th>% of shareholding</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.BeneficialOwners.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="BeneficialOwners[i].OwnerName" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="BeneficialOwners[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="BeneficialOwners[i].OwnershipPercentage" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-secondary-cb small mt-1">Total: @Model.BeneficialOwners.Sum(o => o.OwnershipPercentage)%</div>
             </div>
         </div>
     }

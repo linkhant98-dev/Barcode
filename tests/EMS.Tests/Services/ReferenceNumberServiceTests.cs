@@ -67,6 +67,32 @@ public class ReferenceNumberServiceTests
     }
 
     [Fact]
+    public async Task NextTemporaryShareholderNoAsync_UsesTheTshPrefixAndSameLengthCore()
+    {
+        using var db = new SqliteTestDb();
+        var service = new ReferenceNumberService(db.Context);
+
+        var result = await service.NextTemporaryShareholderNoAsync();
+
+        Assert.StartsWith("TSH", result);
+        Assert.Equal(12, result.Length); // "TSH" + 2-digit year + 7-digit sequence = 3 + 2 + 7
+    }
+
+    [Fact]
+    public async Task NextTemporaryShareholderNoAsync_AndNextShareholderNoAsync_DrawFromTheSameRunningSequence()
+    {
+        using var db = new SqliteTestDb();
+        var service = new ReferenceNumberService(db.Context);
+
+        var temporary = await service.NextTemporaryShareholderNoAsync(); // consumes sequence value 1
+        var permanent = await service.NextShareholderNoAsync(); // consumes sequence value 2 from the same "SH" counter
+        var yy = (DateTime.UtcNow.Year % 100).ToString("D2");
+
+        Assert.Equal($"TSH{yy}0000001", temporary);
+        Assert.Equal($"SH-{yy}0000002", permanent);
+    }
+
+    [Fact]
     public async Task NextCertificateNoAsync_UsesTheCertModule()
     {
         using var db = new SqliteTestDb();

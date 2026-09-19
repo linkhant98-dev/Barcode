@@ -32,6 +32,12 @@ public class ShareholderApplication : AuditableEntity
     public DateOnly? CorporateRegistrationDate { get; set; }
     public string? LegalForm { get; set; }
     public string? TaxIdentifier { get; set; }
+    public DateOnly? DateOfIncorporation { get; set; }
+    public string? TypeOfInstitution { get; set; }
+    public string? NatureOfBusiness { get; set; }
+    public string? SourceOfFund { get; set; }
+    public decimal? PaidUpCapital { get; set; }
+    public DateOnly? BoardResolutionDate { get; set; }
 
     // Address / contact snapshot captured at application time
     public string? AddressLine1 { get; set; }
@@ -45,6 +51,44 @@ public class ShareholderApplication : AuditableEntity
 
     public KycCase? KycCase { get; set; }
     public ICollection<ApplicationJointHolder> JointHolders { get; set; } = new List<ApplicationJointHolder>();
+
+    // Corporate applicant sub-tables (6.3, Categories 3/4/6 - "can add new row with add row button")
+    public ICollection<ApplicationDirector> Directors { get; set; } = new List<ApplicationDirector>();
+    public ICollection<ApplicationAuthorizedSigner> AuthorizedSigners { get; set; } = new List<ApplicationAuthorizedSigner>();
+    public ICollection<ApplicationBeneficialOwner> BeneficialOwners { get; set; } = new List<ApplicationBeneficialOwner>();
+}
+
+/// <summary>Board of Directors / Principal Officers row captured on a Corporate application (6.3, Category 3).</summary>
+public class ApplicationDirector
+{
+    public long ApplicationDirectorId { get; set; }
+    public long ShareholderApplicationId { get; set; }
+    public ShareholderApplication? ShareholderApplication { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public string ResidentialAddress { get; set; } = string.Empty;
+}
+
+/// <summary>Authorized-to-operate-the-account row captured on a Corporate application (6.3, Category 4).</summary>
+public class ApplicationAuthorizedSigner
+{
+    public long ApplicationAuthorizedSignerId { get; set; }
+    public long ShareholderApplicationId { get; set; }
+    public ShareholderApplication? ShareholderApplication { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public string Designation { get; set; } = string.Empty;
+}
+
+/// <summary>Company ownership row captured on a Corporate application (6.3, Category 6) - percentages should total 100%.</summary>
+public class ApplicationBeneficialOwner
+{
+    public long ApplicationBeneficialOwnerId { get; set; }
+    public long ShareholderApplicationId { get; set; }
+    public ShareholderApplication? ShareholderApplication { get; set; }
+    public string OwnerName { get; set; } = string.Empty;
+    public string NrcNumber { get; set; } = string.Empty;
+    public decimal OwnershipPercentage { get; set; }
 }
 
 /// <summary>Joint applicant rows captured on the application before the shareholder is registered (6.3).</summary>

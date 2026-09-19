@@ -16,7 +16,7 @@ public class DashboardService : IDashboardService
 
     public DashboardService(EmsDbContext db) => _db = db;
 
-    public async Task<DashboardViewData> GetDashboardAsync(string? currentUserId, DateOnly? asOfDate, CancellationToken ct = default)
+    public async Task<DashboardViewData> GetDashboardAsync(string? currentUserId, DateOnly? asOfDate, long? groupFilterId = null, CancellationToken ct = default)
     {
         var cutoff = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -29,15 +29,24 @@ public class DashboardService : IDashboardService
             .Select(l => new { l.ShareholderId, l.EffectiveDate, l.QuantityDelta, l.CapitalAmountDelta })
             .ToListAsync(ct);
 
+        // 3.1 - the group filter scopes KPIs 1-3 and Certificates on Issue directly off ShareholderId (an
+        // exact join, not a name-based approximation); DB-01/02/03/04/05 stay full-breakdown/company-wide.
+        var shareholderGroupInfo = await _db.Shareholders
+            .Select(s => new { s.Id, s.ShareholderGroupId, GroupName = s.ShareholderGroup!.NameEn })
+            .ToListAsync(ct);
+        var groupNameByShareholder = shareholderGroupInfo.ToDictionary(s => s.Id, s => s.GroupName);
+        var groupIdByShareholder = shareholderGroupInfo.ToDictionary(s => s.Id, s => s.ShareholderGroupId);
+
+        var scopedLedgerRows = groupFilterId is null
+            ? ledgerRows
+            : ledgerRows.Where(l => groupIdByShareholder.GetValueOrDefault(l.ShareholderId) == groupFilterId).ToList();
+
         var totalShares = ledgerRows.Sum(l => l.QuantityDelta);
         var totalCapital = ledgerRows.Sum(l => l.CapitalAmountDelta);
+        var scopedShares = scopedLedgerRows.Sum(l => l.QuantityDelta);
+        var scopedCapital = scopedLedgerRows.Sum(l => l.CapitalAmountDelta);
 
-        // DB-01 / DB-02 - shareholding by group, count and percentage.
-        var shareholderGroupNames = await _db.Shareholders
-            .Select(s => new { s.Id, GroupName = s.ShareholderGroup!.NameEn })
-            .ToListAsync(ct);
-        var groupNameByShareholder = shareholderGroupNames.ToDictionary(s => s.Id, s => s.GroupName);
-
+        // DB-01 / DB-02 - shareholding by group, count and percentage (always the full breakdown).
         var byGroup = ledgerRows
             .GroupBy(l => groupNameByShareholder.GetValueOrDefault(l.ShareholderId, "Unassigned"))
             .Select(g => new { NameEn = g.Key, Shares = g.Sum(x => x.QuantityDelta), Holders = g.Select(x => x.ShareholderId).Distinct().Count() })
@@ -125,19 +134,37 @@ public class DashboardService : IDashboardService
             .Where(g => g.Count() > 1)
             .CountAsync(ct);
 
+        var registeredShareholdersQuery = _db.Shareholders.Where(s => s.Status == Domain.Common.ShareholderStatus.Active);
+        var certificatesOnIssueQuery = _db.ShareCertificates.Where(c => c.Status == Domain.Common.CertificateStatus.Active);
+        if (groupFilterId is not null)
+        {
+            registeredShareholdersQuery = registeredShareholdersQuery.Where(s => s.ShareholderGroupId == groupFilterId);
+            certificatesOnIssueQuery = certificatesOnIssueQuery.Where(c => c.Shareholder!.ShareholderGroupId == groupFilterId);
+        }
+
         var kpis = new DashboardKpis(
-            RegisteredShareholders: await _db.Shareholders.CountAsync(s => s.Status == Domain.Common.ShareholderStatus.Active, ct),
-            TotalShares: totalShares,
-            PaidUpCapital: totalCapital,
+            RegisteredShareholders: await registeredShareholdersQuery.CountAsync(ct),
+            TotalShares: groupFilterId is null ? totalShares : scopedShares,
+            PaidUpCapital: groupFilterId is null ? totalCapital : scopedCapital,
+            // Pending approvals and applications-in-progress are never scoped to a group: applications have
+            // no group assigned until KYC approval (4.1.1), and an approval instance's EntityId doesn't join
+            // back to a shareholder uniformly across every module (SA/IS/TS/BS/DS).
             PendingApprovals: await _db.ApprovalInstances.CountAsync(i => i.Status == WorkflowStatus.PendingApproval, ct),
             DividendProvisionCurrentYear: yearlyDividend.LastOrDefault()?.ProvisionAmount ?? 0m,
-            CertificatesOnIssue: await _db.ShareCertificates.CountAsync(c => c.Status == Domain.Common.CertificateStatus.Active, ct),
+            CertificatesOnIssue: await certificatesOnIssueQuery.CountAsync(ct),
             ApplicationsInProgress: await _db.ShareholderApplications.CountAsync(a =>
                 a.Status != WorkflowStatus.Completed && a.Status != WorkflowStatus.Rejected &&
                 a.Status != WorkflowStatus.Cancelled && a.Status != WorkflowStatus.Archived, ct));
 
+        var availableGroups = await _db.ShareholderGroups.Where(g => g.IsActive)
+            .OrderBy(g => g.Code)
+            .Select(g => new GroupFilterOption(g.Id, g.NameEn))
+            .ToListAsync(ct);
+        var selectedGroupName = groupFilterId is null ? null : availableGroups.FirstOrDefault(g => g.Id == groupFilterId)?.NameEn;
+
         return new DashboardViewData(
             DateTime.UtcNow, kpis, byGroup, yearlyCapital, yearlyDividend, dividendComparison,
-            myPendingApprovals, recentTransactions, pendingKycCount, duplicateCertificates);
+            myPendingApprovals, recentTransactions, pendingKycCount, duplicateCertificates,
+            availableGroups, groupFilterId, selectedGroupName);
     }
 }

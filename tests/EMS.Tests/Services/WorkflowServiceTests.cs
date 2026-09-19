@@ -223,4 +223,109 @@ public class WorkflowServiceTests
 
         Assert.False(second.Success);
     }
+
+    [Fact]
+    public async Task DecideAsync_CaseTransfer_WithoutATargetRole_IsRejectedAsInvalid()
+    {
+        using var db = new SqliteTestDb();
+        TestSeed.SingleStepRule(db.Context, "IS", "DGM Approver");
+        var service = BuildService(db, new FakeCurrentUserService { UserId = "maker" });
+        var instance = await service.SubmitForApprovalAsync(new SubmitForApprovalRequest("ShareTransaction", 1, "IS-2026-000001", "IS", null, null, null));
+        var stepId = instance.Steps.Single().Id;
+
+        var approver = new FakeCurrentUserService { UserId = "approver", RoleList = ["DGM Approver"] };
+        var decideService = BuildService(db, approver);
+
+        var result = await decideService.DecideAsync(new ApprovalDecisionRequest(stepId, ApprovalDecision.CaseTransfer, null, 0));
+
+        Assert.False(result.Success);
+        Assert.Contains("Select the approver role", result.Error);
+    }
+
+    [Fact]
+    public async Task DecideAsync_CaseTransfer_ReassignsTheStepToTheNewRoleAndNotifiesIt()
+    {
+        using var db = new SqliteTestDb();
+        TestSeed.SingleStepRule(db.Context, "IS", "DGM Approver");
+        var service = BuildService(db, new FakeCurrentUserService { UserId = "maker" });
+        var instance = await service.SubmitForApprovalAsync(new SubmitForApprovalRequest("ShareTransaction", 1, "IS-2026-000001", "IS", null, null, null));
+        var stepId = instance.Steps.Single().Id;
+
+        var approver = new FakeCurrentUserService { UserId = "approver", RoleList = ["DGM Approver"] };
+        var notifications = new FakeNotificationService();
+        var decideService = BuildService(db, approver, notifications);
+
+        var result = await decideService.DecideAsync(new ApprovalDecisionRequest(stepId, ApprovalDecision.CaseTransfer, null, 0, "Legal Approver"));
+
+        Assert.True(result.Success);
+        var refreshed = await decideService.GetActiveInstanceAsync("ShareTransaction", 1);
+        var step = refreshed!.Steps.Single();
+        Assert.Equal("Legal Approver", step.ApproverRole);
+        Assert.Equal(ApprovalStepStatus.Pending, step.Status);
+        Assert.Single(notifications.RoleNotifications, n => n.Role == "Legal Approver");
+
+        // The original approver can no longer act on it - they no longer hold the (now-reassigned) role.
+        var originalApproverRetry = await decideService.DecideAsync(new ApprovalDecisionRequest(stepId, ApprovalDecision.Approve, null, 0));
+        Assert.False(originalApproverRetry.Success);
+    }
+
+    [Fact]
+    public async Task RecallAsync_ByAUserOtherThanTheSubmitter_IsRejected()
+    {
+        using var db = new SqliteTestDb();
+        TestSeed.SingleStepRule(db.Context, "IS", "DGM Approver");
+        var service = BuildService(db, new FakeCurrentUserService { UserId = "maker" });
+        var instance = await service.SubmitForApprovalAsync(new SubmitForApprovalRequest("ShareTransaction", 1, "IS-2026-000001", "IS", null, null, null));
+
+        var someoneElse = BuildService(db, new FakeCurrentUserService { UserId = "not-the-maker" });
+        var result = await someoneElse.RecallAsync(instance.Id, "Legal Approver", null);
+
+        Assert.False(result.Success);
+        Assert.Contains("original submitter", result.Error, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RecallAsync_ByTheSubmitter_RecallsAndReassignsInOneMotion()
+    {
+        using var db = new SqliteTestDb();
+        TestSeed.SingleStepRule(db.Context, "IS", "DGM Approver");
+        var maker = new FakeCurrentUserService { UserId = "maker" };
+        var service = BuildService(db, maker);
+        var instance = await service.SubmitForApprovalAsync(new SubmitForApprovalRequest("ShareTransaction", 1, "IS-2026-000001", "IS", null, null, null));
+        var originalStepId = instance.Steps.Single().Id;
+
+        var notifications = new FakeNotificationService();
+        var recallService = BuildService(db, maker, notifications);
+
+        var result = await recallService.RecallAsync(instance.Id, "Legal Approver", "Sent to the wrong approver");
+
+        Assert.True(result.Success);
+        var refreshed = await recallService.GetActiveInstanceAsync("ShareTransaction", 1);
+        var step = refreshed!.Steps.Single();
+        Assert.Equal("Legal Approver", step.ApproverRole);
+        Assert.Equal(ApprovalStepStatus.Pending, step.Status);
+        Assert.Single(notifications.RoleNotifications, n => n.Role == "Legal Approver");
+
+        // The previously-assigned approver can no longer act on the (now reassigned) step.
+        var oldApprover = BuildService(db, new FakeCurrentUserService { UserId = "old-approver", RoleList = ["DGM Approver"] });
+        var oldApproverRetry = await oldApprover.DecideAsync(new ApprovalDecisionRequest(originalStepId, ApprovalDecision.Approve, null, 0));
+        Assert.False(oldApproverRetry.Success);
+    }
+
+    [Fact]
+    public async Task RecallAsync_WithoutAPendingStep_IsRejected()
+    {
+        using var db = new SqliteTestDb();
+        TestSeed.SingleStepRule(db.Context, "IS", "DGM Approver");
+        var maker = new FakeCurrentUserService { UserId = "maker" };
+        var service = BuildService(db, maker);
+        var instance = await service.SubmitForApprovalAsync(new SubmitForApprovalRequest("ShareTransaction", 1, "IS-2026-000001", "IS", null, null, null));
+        var stepId = instance.Steps.Single().Id;
+        var approver = BuildService(db, new FakeCurrentUserService { UserId = "approver", RoleList = ["DGM Approver"] });
+        await approver.DecideAsync(new ApprovalDecisionRequest(stepId, ApprovalDecision.Approve, null, 0)); // completes the only step
+
+        var result = await service.RecallAsync(instance.Id, "Legal Approver", null);
+
+        Assert.False(result.Success);
+    }
 }

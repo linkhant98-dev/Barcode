@@ -49,4 +49,8 @@ public class MasterDataItemViewModel
     public string NameEn { get; set; } = string.Empty;
     [Display(Name = "Name (Myanmar)")]
     public string NameMm { get; set; } = string.Empty;
+    /// <summary>3.1 - ShareholderGroup only: leave empty for a main group, or pick a main group to add this
+    /// as one of its sub groups.</summary>
+    [Display(Name = "Main group")]
+    public long? ParentGroupId { get; set; }
 }

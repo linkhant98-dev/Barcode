@@ -41,6 +41,9 @@ public class EmsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     // Applications / KYC
     public DbSet<ShareholderApplication> ShareholderApplications => Set<ShareholderApplication>();
     public DbSet<ApplicationJointHolder> ApplicationJointHolders => Set<ApplicationJointHolder>();
+    public DbSet<ApplicationDirector> ApplicationDirectors => Set<ApplicationDirector>();
+    public DbSet<ApplicationAuthorizedSigner> ApplicationAuthorizedSigners => Set<ApplicationAuthorizedSigner>();
+    public DbSet<ApplicationBeneficialOwner> ApplicationBeneficialOwners => Set<ApplicationBeneficialOwner>();
     public DbSet<KycCase> KycCases => Set<KycCase>();
 
     // Master data

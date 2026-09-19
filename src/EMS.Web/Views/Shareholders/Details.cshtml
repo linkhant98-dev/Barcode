@@ -1,4 +1,5 @@
 @model ShareholderProfileViewModel
+@inject EMS.Application.Abstractions.IPermissionService PermissionService
 @{
     var s = Model.Shareholder;
     var header = new PageHeaderViewModel
@@ -10,6 +11,7 @@
     };
 }
 <partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
 
 <div class="cb-kpi-row">
     <div class="cb-card cb-card--kpi highlight">
@@ -50,6 +52,25 @@
                 <dd class="col-9">@(s.Addresses.FirstOrDefault() is { } a ? $"{a.Line1}, {a.Township}, {a.City}" : "-")</dd>
                 <dt class="col-3">KYC status</dt>
                 <dd class="col-9"><partial name="_StatusBadge" model="@s.KycStatus.ToString()" /></dd>
+                <dt class="col-3">ID status</dt>
+                <dd class="col-9">
+                    @if (s.IsPermanentId)
+                    {
+                        <span class="badge text-bg-success">Permanent</span>
+                        <span class="text-secondary-cb small">(CBM approval obtained @s.PermanentIdDate?.ToString("dd MMM yyyy"))</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-warning">Temporary</span>
+                        <span class="text-secondary-cb small">Becomes Permanent once Board/CBM approval is filed (4.1.1).</span>
+                        @if (await PermissionService.CurrentUserHasPermissionAsync(EMS.Application.Abstractions.Permissions.PromotePermanentShareholderId))
+                        {
+                            <form asp-action="PromoteToPermanentId" asp-route-id="@s.Id" method="post" class="d-inline ms-2">
+                                <button type="submit" class="btn btn-cb-outline btn-sm">Record CBM/Board approval &rarr; Promote to Permanent</button>
+                            </form>
+                        }
+                    }
+                </dd>
             </dl>
         </div>
     </div>

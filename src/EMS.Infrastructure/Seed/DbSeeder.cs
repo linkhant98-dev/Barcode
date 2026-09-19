@@ -85,6 +85,10 @@ public static class DbSeeder
                 Grant(approverRole, Application.Abstractions.Permissions.ReportsView);
             }
 
+            // 4.1.1 / step 7 - files the Board/CBM approval letters and promotes the Shareholder's
+            // Temporary ID to Permanent; a manual action, not an in-system workflow step (11.1 baseline above).
+            Grant("CBM Recording User", Application.Abstractions.Permissions.PromotePermanentShareholderId);
+
             Grant("Auditor",
                 Application.Abstractions.Permissions.ReportsView,
                 Application.Abstractions.Permissions.ReportsExport,
@@ -114,10 +118,54 @@ public static class DbSeeder
 
         if (!await db.ShareholderGroups.AnyAsync())
         {
-            var groups = new[] { "BOD", "Staff", "Management", "Public Company", "Cooperative", "Personal" }
-                .Select(name => new ShareholderGroup { Code = name.ToUpperInvariant().Replace(" ", "_"), NameEn = name, NameMm = name, EffectiveFrom = new DateOnly(2020, 1, 1) })
-                .ToList();
-            db.ShareholderGroups.AddRange(groups);
+            // 3.1 - six main shareholder groups, most with named sub groups (B.O.D and Fraction Share have
+            // none, so they stand alone). Codes BOD/STAFF/MANAGEMENT/PUBLIC_COMPANY/COOPERATIVE/PERSONAL are
+            // kept from the original flat seed so SeedDemoTransactionsAsync/SeedSampleActivityAsync below
+            // (and the tests that call them directly) keep resolving the same groups unchanged.
+            ShareholderGroup G(string code, string nameEn, long? parentId = null) =>
+                new() { Code = code, NameEn = nameEn, NameMm = nameEn, ParentGroupId = parentId, EffectiveFrom = new DateOnly(2020, 1, 1) };
+
+            var standaloneAndMains = new[]
+            {
+                G("BOD", "B.O.D"),
+                G("FRACTION_SHARE", "Fraction Share"),
+                G("PRIV_PUB_CO", "Private & Public Companies"),
+                G("MGMT_PERSONAL", "Management & Personal"),
+                G("CCS_COOP", "CCS & Original Co-operatives"),
+                G("STAFFS", "Staffs"),
+                G("STATES_DIV_COOP", "States & Divisions Co-Operatives")
+            };
+            db.ShareholderGroups.AddRange(standaloneAndMains);
+            await db.SaveChangesAsync();
+
+            long IdOf(string code) => standaloneAndMains.First(g => g.Code == code).Id;
+
+            var subGroups = new[]
+            {
+                G("PRIVATE_COMPANY", "Private Companies", IdOf("PRIV_PUB_CO")),
+                G("PUBLIC_COMPANY", "Public Companies", IdOf("PRIV_PUB_CO")),
+                G("MANAGEMENT", "Management", IdOf("MGMT_PERSONAL")),
+                G("PERSONAL", "Personal", IdOf("MGMT_PERSONAL")),
+                G("CCS", "CCS", IdOf("CCS_COOP")),
+                G("COOPERATIVE", "Original Co-Operatives", IdOf("CCS_COOP")),
+                G("KAYTUMADI_STAFF", "Kaytumadi Staffs", IdOf("STAFFS")),
+                G("STAFF", "CB Bank Staffs", IdOf("STAFFS")),
+                G("YANGON_COOP", "Yangon Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("MANDALAY_COOP", "Mandalay Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("SAGAING_COOP", "Sagaing Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("BAGO_COOP", "Bago Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("MAGWE_COOP", "Magwe Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("TANINTHARYI_COOP", "Tanintharyi Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("AYEYARWADDY_COOP", "Ayeyarwaddy Division Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("KACHIN_COOP", "Kachin State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("KAYAR_COOP", "Kayar State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("KAYIN_COOP", "Kayin State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("CHIN_COOP", "Chin State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("MON_COOP", "Mon State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("RAKHINE_COOP", "Rakhine State Co-Operatives", IdOf("STATES_DIV_COOP")),
+                G("SHAN_COOP", "Shan State Co-Operatives", IdOf("STATES_DIV_COOP"))
+            };
+            db.ShareholderGroups.AddRange(subGroups);
         }
 
         if (!await db.ShareClasses.AnyAsync())
@@ -156,9 +204,24 @@ public static class DbSeeder
 
         if (!await db.ApprovalMatrixRules.AnyAsync())
         {
-            // 11.1 baseline sequence: DGM, Legal, DGM, DMD, Managing Director, CEO, Vice Chairman, Board of Directors, (CBM conditional).
-            string[] steps = ["DGM", "Legal", "DMD", "Managing Director", "CEO", "Vice Chairman", "Board of Directors"];
-            string[] roleMap = ["DGM Approver", "Legal Approver", "DMD Approver", "Managing Director Approver", "CEO Approver", "Vice Chairman Approver", "Board Approver"];
+            // 11.1 / 3.4 baseline sequence: DGM (initial review) -> Legal -> DGM (final confirmation) ->
+            // DMD/Managing Director/CEO/Vice Chairman (not strictly sequential per 3.4's general notes) ->
+            // Board of Directors. CBM approval is obtained outside the system (a physical board/CBM letter)
+            // and only filed back in afterwards - see Permissions.PromotePermanentShareholderId and the
+            // "CBM Recording User" role - so it is deliberately not an ApprovalMatrixRule step.
+            string[] steps = ["DGM (Initial Review)", "Legal", "DGM (Final Confirmation)", "DMD", "Managing Director", "CEO", "Vice Chairman", "Board of Directors"];
+            string[] roleMap = ["DGM Approver", "Legal Approver", "DGM Approver", "DMD Approver", "Managing Director Approver", "CEO Approver", "Vice Chairman Approver", "Board Approver"];
+            ApprovalStageMode[] stageModes =
+            [
+                ApprovalStageMode.Sequential,
+                ApprovalStageMode.Sequential,
+                ApprovalStageMode.Sequential,
+                ApprovalStageMode.ParallelAny,
+                ApprovalStageMode.ParallelAny,
+                ApprovalStageMode.ParallelAny,
+                ApprovalStageMode.ParallelAny,
+                ApprovalStageMode.Sequential
+            ];
             string[] modules = ["SA", "IS", "TS", "BS", "DS"];
 
             foreach (var module in modules)
@@ -172,7 +235,7 @@ public static class DbSeeder
                         StepName = steps[i],
                         ApproverRole = roleMap[i],
                         IsMandatory = true,
-                        StageMode = ApprovalStageMode.Sequential,
+                        StageMode = stageModes[i],
                         EffectiveFrom = new DateOnly(2020, 1, 1),
                         IsActive = true,
                         CreatedAtUtc = DateTime.UtcNow,

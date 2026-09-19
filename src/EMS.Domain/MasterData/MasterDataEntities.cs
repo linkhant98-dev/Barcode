@@ -30,8 +30,12 @@ public class Department : MasterDataEntity
     public Department? ParentDepartment { get; set; }
 }
 
+/// <summary>3.1 - Main/Sub shareholder groups (e.g. "States &amp; Divisions Co-Operatives" as the main group,
+/// with each state/division co-operative as a sub group). A top-level main group has no ParentGroup.</summary>
 public class ShareholderGroup : MasterDataEntity
 {
+    public long? ParentGroupId { get; set; }
+    public ShareholderGroup? ParentGroup { get; set; }
 }
 
 /// <summary>Ordinary, preference, founder, common, bonus and future share classes (5, effective-dated).</summary>

@@ -124,6 +124,10 @@ public class WorkflowService : IWorkflowService
         if ((request.Decision is ApprovalDecision.Reject or ApprovalDecision.Revert) && string.IsNullOrWhiteSpace(request.Comment))
             return new WorkflowResult(false, instance.Status, "A comment is required for Reject or Revert.");
 
+        // 3.4 - Case-Transfer requires a target approver role.
+        if (request.Decision == ApprovalDecision.CaseTransfer && string.IsNullOrWhiteSpace(request.TransferToRole))
+            return new WorkflowResult(false, instance.Status, "Select the approver role to transfer this case to.");
+
         step.Decision = request.Decision;
         step.DecisionByUserId = _currentUser.UserId;
         step.DecisionAtUtc = DateTime.UtcNow;
@@ -153,6 +157,15 @@ public class WorkflowService : IWorkflowService
                 step.Status = ApprovalStepStatus.Pending;
                 break;
 
+            case ApprovalDecision.CaseTransfer:
+                // Reassigns the step to a different approver ROLE (unlike Delegate, which hands the same
+                // step to a specific person while keeping the same role) - the current approver can no
+                // longer act on it once transferred.
+                step.ApproverRole = request.TransferToRole!;
+                step.DelegatedToUserId = null;
+                step.Status = ApprovalStepStatus.Pending;
+                break;
+
             case ApprovalDecision.Approve:
             default:
                 step.Status = ApprovalStepStatus.Approved;
@@ -176,6 +189,50 @@ public class WorkflowService : IWorkflowService
             after: new { request.Decision, request.Comment }, ct: ct);
 
         await NotifyAfterDecisionAsync(instance, step, request.Decision, ct);
+
+        return new WorkflowResult(true, instance.Status);
+    }
+
+    public async Task<WorkflowResult> RecallAsync(long approvalInstanceId, string? reassignToRole, string? comment, CancellationToken ct = default)
+    {
+        var instance = await _db.ApprovalInstances.Include(i => i.Steps).FirstOrDefaultAsync(i => i.Id == approvalInstanceId, ct);
+        if (instance is null)
+            return new WorkflowResult(false, WorkflowStatus.PendingApproval, "Approval instance not found.");
+
+        // 3.4 - Recall is a "First Approver" (submitter) action; nobody else may pull a case back.
+        if (instance.SubmittedByUserId != _currentUser.UserId)
+            return new WorkflowResult(false, instance.Status, "Only the original submitter can recall this case.");
+
+        if (instance.Status != WorkflowStatus.PendingApproval)
+            return new WorkflowResult(false, instance.Status, "This case is not currently awaiting a decision.");
+
+        var pendingStep = instance.Steps.FirstOrDefault(s => s.Status == ApprovalStepStatus.Pending);
+        if (pendingStep is null)
+            return new WorkflowResult(false, instance.Status, "There is no pending step to recall.");
+
+        pendingStep.Status = ApprovalStepStatus.Recalled;
+        pendingStep.DelegatedToUserId = null;
+        pendingStep.Comment = comment;
+        pendingStep.ModifiedAtUtc = DateTime.UtcNow;
+        pendingStep.ModifiedBy = _currentUser.UserId;
+
+        if (!string.IsNullOrWhiteSpace(reassignToRole))
+        {
+            // The sender already knows the correct approver, so recall + reassignment happens in one motion (3.4).
+            pendingStep.ApproverRole = reassignToRole;
+            pendingStep.Status = ApprovalStepStatus.Pending;
+        }
+
+        await _db.SaveChangesAsync(ct);
+        await _audit.LogAsync("Recall", instance.EntityType, instance.EntityType, instance.EntityReference,
+            after: new { reassignToRole, comment }, ct: ct);
+
+        if (pendingStep.Status == ApprovalStepStatus.Pending)
+        {
+            await _notifications.NotifyRoleAsync(pendingStep.ApproverRole, "APPROVAL_ASSIGNED",
+                $"Approval needed - {instance.EntityReference}", $"{instance.EntityReference} was recalled and reassigned to your role ({pendingStep.StepName}) for decision.",
+                instance.EntityReference, ApprovalReviewLink(pendingStep), ct);
+        }
 
         return new WorkflowResult(true, instance.Status);
     }
@@ -233,6 +290,12 @@ public class WorkflowService : IWorkflowService
                 await _notifications.NotifyUserAsync(instance.SubmittedByUserId, "APPROVAL_" + decision.ToString().ToUpperInvariant(),
                     $"{decision} - {instance.EntityReference}", $"{instance.EntityReference} was {decision.ToString().ToLowerInvariant()}ed by {decidedStep.StepName}: {decidedStep.Comment}",
                     instance.EntityReference, ct: ct);
+                break;
+
+            case ApprovalDecision.CaseTransfer:
+                await _notifications.NotifyRoleAsync(decidedStep.ApproverRole, "APPROVAL_ASSIGNED",
+                    $"Case transferred - {instance.EntityReference}", $"{instance.EntityReference} was transferred to your role ({decidedStep.StepName}) for decision.",
+                    instance.EntityReference, ApprovalReviewLink(decidedStep), ct);
                 break;
         }
     }
