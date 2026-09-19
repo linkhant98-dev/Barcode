@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -17,10 +18,15 @@ public class ControllerSmokeTests : IDisposable
 
     public ControllerSmokeTests()
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
-        Environment.SetEnvironmentVariable("Database__Provider", "Sqlite");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Sqlite", $"Data Source={_dbPath}");
-        _factory = new WebApplicationFactory<Program>();
+        // Configuration is set per-factory (UseSetting/UseEnvironment), never via Environment.SetEnvironmentVariable:
+        // that mutates process-wide state, and WebApplicationFactory only reads it lazily when the host actually
+        // starts (on the first CreateClient() call) - not at construction time - so a test class running
+        // concurrently with this one (xUnit parallelizes across classes by default) can overwrite it first,
+        // pointing two factories at the same SQLite file and racing on EnsureCreatedAsync ("table already exists").
+        _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder
+            .UseEnvironment("Testing")
+            .UseSetting("Database:Provider", "Sqlite")
+            .UseSetting("ConnectionStrings:Sqlite", $"Data Source={_dbPath}"));
     }
 
     [Theory]
@@ -97,9 +103,5 @@ public class ControllerSmokeTests : IDisposable
         _factory.Dispose();
         if (File.Exists(_dbPath))
             File.Delete(_dbPath);
-
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
-        Environment.SetEnvironmentVariable("Database__Provider", null);
-        Environment.SetEnvironmentVariable("ConnectionStrings__Sqlite", null);
     }
 }
