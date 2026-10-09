@@ -1,0 +1,33 @@
+@model CreateDividendEventViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "New Dividend Event", Description = "Define financial year, rate and price per share." };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:640px;">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="FinancialYear" class="cb-form-label cb-required"></label>
+            <input asp-for="FinancialYear" class="form-control" placeholder="2025-2026" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="RecordDate" class="cb-form-label cb-required"></label>
+            <input asp-for="RecordDate" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="DividendPercentage" class="cb-form-label cb-required"></label>
+            <input asp-for="DividendPercentage" class="form-control numeric" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CapitalValuePerShare" class="cb-form-label cb-required"></label>
+            <input asp-for="CapitalValuePerShare" class="form-control numeric" />
+        </div>
+    </div>
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Create Event</button>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

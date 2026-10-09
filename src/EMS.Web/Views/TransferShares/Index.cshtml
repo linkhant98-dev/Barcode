@@ -1,0 +1,37 @@
+@model List<EMS.Domain.Shares.ShareTransaction>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Transfer Shares",
+        Description = $"{Model.Count} record(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv")!, "outline", "bi-download") },
+        PrimaryAction = new PageAction("New Transfer", Url.Action("Create")!, "primary", "bi-arrow-left-right")
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Reference</th><th>From</th><th>To</th><th class="numeric">Quantity</th><th>Type</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7"><div class="cb-empty-state">No transfers found. <a asp-action="Create">Create a new transfer</a>.</div></td></tr>
+                }
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td>@t.TransactionNo</td>
+                        <td>@t.ShareTransfer?.FromShareholder?.ShareholderNo</td>
+                        <td>@t.ShareTransfer?.ToShareholder?.ShareholderNo</td>
+                        <td class="numeric">@t.ShareTransfer?.Quantity.ToString("N0")</td>
+                        <td>@t.ShareTransfer?.TransferType</td>
+                        <td><partial name="_StatusBadge" model="@t.Status.ToString()" /></td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@t.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

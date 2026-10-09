@@ -1,0 +1,67 @@
+@model EMS.Domain.CorporateActions.BonusEvent
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = Model.BonusEventNo,
+        Description = $"{Model.FinancialYear} | Ratio {Model.BonusNumerator}:{Model.BonusDenominator} | {Model.BatchVersion}",
+        StatusBadge = Model.Status.ToString()
+    };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="cb-table-card mb-3">
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Shareholder</th><th class="numeric">Eligible</th><th class="numeric">Bonus shares</th><th class="numeric">Remainder</th><th class="numeric">Cash bonus</th></tr></thead>
+                    <tbody>
+                        @if (Model.Entitlements.Count == 0)
+                        {
+                            <tr><td colspan="5"><div class="cb-empty-state">No calculation yet. Run preview to generate entitlements.</div></td></tr>
+                        }
+                        @foreach (var e in Model.Entitlements)
+                        {
+                            <tr>
+                                <td>@e.Shareholder?.ShareholderNo</td>
+                                <td class="numeric">@e.EligibleShares.ToString("N0")</td>
+                                <td class="numeric">@e.BonusShares.ToString("N0")</td>
+                                <td class="numeric">@e.RemainderShares.ToString("N0")</td>
+                                <td class="numeric">@e.CashBonusAmount.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            @if (Model.Status == EMS.Domain.Common.WorkflowStatus.Draft)
+            {
+                <form asp-action="Preview" asp-route-id="@Model.Id" method="post">
+                    <button type="submit" class="btn btn-cb-outline">Run Calculation Preview</button>
+                </form>
+                @if (Model.Entitlements.Count > 0)
+                {
+                    <form asp-action="Submit" asp-route-id="@Model.Id" method="post">
+                        <button type="submit" class="btn btn-cb-gold">Submit for Approval</button>
+                    </form>
+                }
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="cb-card">
+            <h2 class="h6">Approval</h2>
+            @if (ViewBag.ApprovalInstance is EMS.Domain.Workflow.ApprovalInstance instance)
+            {
+                <partial name="_ApprovalTimeline" model="instance" />
+            }
+            else
+            {
+                <p class="text-secondary-cb small mb-0">Not yet submitted for approval.</p>
+            }
+        </div>
+    </div>
+</div>

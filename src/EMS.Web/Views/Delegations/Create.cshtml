@@ -1,0 +1,41 @@
+@model CreateDelegationViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "New Delegation", Description = "Temporarily delegate an approval role to another user." };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:640px;">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="ToUserId" class="cb-form-label cb-required"></label>
+            <select asp-for="ToUserId" class="form-select" asp-items="ViewBag.Users">
+                <option value="">-- select user --</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ApproverRole" class="cb-form-label cb-required"></label>
+            <select asp-for="ApproverRole" class="form-select" asp-items="ViewBag.Roles">
+                <option value="">-- select role --</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="StartDate" class="cb-form-label cb-required"></label>
+            <input asp-for="StartDate" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="EndDate" class="cb-form-label cb-required"></label>
+            <input asp-for="EndDate" class="form-control" />
+        </div>
+        <div class="col-12">
+            <label asp-for="Reason" class="cb-form-label cb-required"></label>
+            <textarea asp-for="Reason" class="form-control" rows="2"></textarea>
+        </div>
+    </div>
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Create Delegation</button>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

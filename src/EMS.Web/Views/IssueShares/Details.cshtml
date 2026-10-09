@@ -1,0 +1,54 @@
+@model EMS.Domain.Shares.ShareTransaction
+@{
+    var issue = Model.ShareIssue;
+    var header = new PageHeaderViewModel
+    {
+        Title = Model.TransactionNo,
+        Description = $"Created {Model.CreatedAtUtc:dd MMM yyyy}",
+        StatusBadge = Model.Status.ToString()
+    };
+    if (Model.Status == EMS.Domain.Common.WorkflowStatus.Completed)
+    {
+        header.SecondaryActions.Add(new PageAction("Download Receipt", Url.Action("DownloadReceiptPdf", new { id = Model.Id })!, "outline", "bi-receipt"));
+    }
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="cb-card mb-3">
+            <h2 class="h6">Transaction details</h2>
+            <dl class="row mb-0">
+                <dt class="col-4">Shareholder</dt><dd class="col-8">@issue?.Shareholder?.ShareholderNo - @issue?.Shareholder?.Person?.NameEn</dd>
+                <dt class="col-4">Apply type</dt><dd class="col-8">@issue?.ApplyType</dd>
+                <dt class="col-4">Share class</dt><dd class="col-8">@issue?.ShareClass?.NameEn</dd>
+                <dt class="col-4">Number of shares</dt><dd class="col-8 numeric">@issue?.NumberOfShares.ToString("N0")</dd>
+                <dt class="col-4">Capital amount</dt><dd class="col-8 numeric">@issue?.CapitalAmount.ToString("N0")</dd>
+                <dt class="col-4">Premium amount</dt><dd class="col-8 numeric">@issue?.PremiumAmount.ToString("N0")</dd>
+                <dt class="col-4">Total amount</dt><dd class="col-8 numeric">@Model.TotalAmount.ToString("N0")</dd>
+                <dt class="col-4">Payment (cash / cheque)</dt><dd class="col-8">@issue?.CashAmount.ToString("N0") / @issue?.ChequeAmount.ToString("N0")</dd>
+            </dl>
+        </div>
+
+        @if (Model.Status == EMS.Domain.Common.WorkflowStatus.Draft)
+        {
+            <form asp-action="Submit" asp-route-id="@Model.Id" method="post">
+                <button type="submit" class="btn btn-cb-gold">Submit for Approval</button>
+            </form>
+        }
+    </div>
+    <div class="col-lg-4">
+        <div class="cb-card">
+            <h2 class="h6">Approval</h2>
+            @if (ViewBag.ApprovalInstance is EMS.Domain.Workflow.ApprovalInstance instance)
+            {
+                <partial name="_ApprovalTimeline" model="instance" />
+            }
+            else
+            {
+                <p class="text-secondary-cb small mb-0">Not yet submitted for approval.</p>
+            }
+        </div>
+    </div>
+</div>

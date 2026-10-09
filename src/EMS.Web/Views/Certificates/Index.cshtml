@@ -1,0 +1,48 @@
+@model List<EMS.Domain.Shares.ShareCertificate>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Certificates",
+        Description = $"{Model.Count} certificate(s)",
+        SecondaryActions = { new PageAction("Export CSV", Url.Action("ExportCsv", new { status = ViewBag.StatusFilter })!, "outline", "bi-download") }
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+<div class="cb-filter-bar">
+    <form method="get" class="d-flex gap-2">
+        <select name="status" class="form-select form-select-sm" style="max-width:220px;" onchange="this.form.submit()">
+            <option value="">All statuses</option>
+            @foreach (var s in Enum.GetNames<EMS.Domain.Common.CertificateStatus>())
+            {
+                <option value="@s" selected="@(ViewBag.StatusFilter == s)">@s</option>
+            }
+        </select>
+    </form>
+</div>
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Certificate #</th><th>Shareholder</th><th>Class</th><th class="numeric">Quantity</th><th>Issue Date</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7"><div class="cb-empty-state">No certificates found.</div></td></tr>
+                }
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.CertificateNumber</td>
+                        <td>@c.Shareholder?.ShareholderNo</td>
+                        <td>@c.ShareClass?.NameEn</td>
+                        <td class="numeric">@c.Quantity.ToString("N0")</td>
+                        <td>@c.IssueDate.ToString("dd MMM yyyy")</td>
+                        <td><partial name="_StatusBadge" model="@c.Status.ToString()" /></td>
+                        <td><a class="btn btn-cb-outline btn-sm" asp-action="Details" asp-route-id="@c.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
