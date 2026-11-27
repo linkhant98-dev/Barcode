@@ -1,0 +1,244 @@
+@model EditApplicationViewModel
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = Model.ApplicationNo,
+        Description = $"{Model.Type} application",
+        StatusBadge = Model.Status
+    };
+}
+<partial name="_PageHeader" model="header" />
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert-success">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert-danger">@err</div>
+}
+
+<partial name="_ValidationSummary" />
+
+<div class="cb-stepper">
+    <span class="cb-step done"><span class="cb-step-num">1</span> Applicant Type</span>
+    <span class="cb-step current"><span class="cb-step-num">2</span> Details &amp; Documents</span>
+    <span class="cb-step"><span class="cb-step-num">3</span> Review &amp; Submit</span>
+    <span class="cb-step"><span class="cb-step-num">4</span> KYC &amp; Registration</span>
+</div>
+
+<form asp-action="SaveDraft" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Type" />
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Group and identity</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="ShareholderGroupId" class="cb-form-label cb-required"></label>
+                <select asp-for="ShareholderGroupId" class="form-select" asp-items="@(new SelectList(ViewBag.Groups, "Id", "NameEn"))"></select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Type == ApplicantType.Personal || Model.Type == ApplicantType.Joint)
+    {
+        <div class="cb-card mb-3">
+            <h2 class="h6">Personal details</h2>
+            <p class="text-secondary-cb small">Provide identity information exactly as shown on official documents.</p>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="NameEn" class="cb-form-label cb-required"></label>
+                    <input asp-for="NameEn" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="NameMm" class="cb-form-label"></label>
+                    <input asp-for="NameMm" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="DateOfBirth" class="cb-form-label cb-required"></label>
+                    <input asp-for="DateOfBirth" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NrcPrefixCode" class="cb-form-label"></label>
+                    <input asp-for="NrcPrefixCode" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NrcNumber" class="cb-form-label cb-required"></label>
+                    <input asp-for="NrcNumber" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FatherName" class="cb-form-label"></label>
+                    <input asp-for="FatherName" class="form-control" />
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.Type == ApplicantType.Corporate)
+    {
+        <div class="cb-card mb-3">
+            <h2 class="h6">Corporate details</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="LegalNameEn" class="cb-form-label cb-required"></label>
+                    <input asp-for="LegalNameEn" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="RegistrationNumber" class="cb-form-label cb-required"></label>
+                    <input asp-for="RegistrationNumber" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="CorporateRegistrationDate" class="cb-form-label cb-required"></label>
+                    <input asp-for="CorporateRegistrationDate" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="LegalForm" class="cb-form-label"></label>
+                    <input asp-for="LegalForm" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TaxIdentifier" class="cb-form-label"></label>
+                    <input asp-for="TaxIdentifier" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="DateOfIncorporation" class="cb-form-label"></label>
+                    <input asp-for="DateOfIncorporation" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="TypeOfInstitution" class="cb-form-label"></label>
+                    <input asp-for="TypeOfInstitution" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NatureOfBusiness" class="cb-form-label"></label>
+                    <input asp-for="NatureOfBusiness" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SourceOfFund" class="cb-form-label"></label>
+                    <input asp-for="SourceOfFund" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="PaidUpCapital" class="cb-form-label"></label>
+                    <input asp-for="PaidUpCapital" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="BoardResolutionDate" class="cb-form-label"></label>
+                    <input asp-for="BoardResolutionDate" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Board of Directors / Principal Officers</h2>
+            <p class="cb-help-text">Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Name</th><th>NRC No.</th><th>Residential address</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Directors.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="Directors[i].Name" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="Directors[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="Directors[i].ResidentialAddress" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Authorized Persons to Operate the Account</h2>
+            <p class="cb-help-text">Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Name</th><th>NRC No.</th><th>Designation</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.AuthorizedSigners.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="AuthorizedSigners[i].Name" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="AuthorizedSigners[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="AuthorizedSigners[i].Designation" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cb-card mb-3">
+            <h2 class="h6">Company Ownership</h2>
+            <p class="cb-help-text">Percentages should total 100%. Blank rows are ignored on save.</p>
+            <div class="cb-table-responsive">
+                <table class="cb-table">
+                    <thead><tr><th>Owner name</th><th>NRC No.</th><th>% of shareholding</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.BeneficialOwners.Count; i++)
+                        {
+                            <tr>
+                                <td><input asp-for="BeneficialOwners[i].OwnerName" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="BeneficialOwners[i].NrcNumber" class="form-control form-control-sm" /></td>
+                                <td><input asp-for="BeneficialOwners[i].OwnershipPercentage" class="form-control form-control-sm" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-secondary-cb small mt-1">Total: @Model.BeneficialOwners.Sum(o => o.OwnershipPercentage)%</div>
+            </div>
+        </div>
+    }
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Address and contact</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="AddressLine1" class="cb-form-label"></label>
+                <input asp-for="AddressLine1" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Township" class="cb-form-label"></label>
+                <input asp-for="Township" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="City" class="cb-form-label"></label>
+                <input asp-for="City" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="StateRegion" class="cb-form-label"></label>
+                <input asp-for="StateRegion" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Mobile" class="cb-form-label cb-required"></label>
+                <input asp-for="Mobile" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Email" class="cb-form-label"></label>
+                <input asp-for="Email" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="cb-card mb-3">
+        <h2 class="h6">Documents</h2>
+        <div class="cb-dropzone">
+            <i class="bi bi-cloud-upload fs-3"></i>
+            <p class="mb-0">Drag files here or choose files</p>
+            <p class="small mb-0">PDF, Word, Excel, JPG or PNG &middot; Maximum file 5 MB; maximum image 2 MB</p>
+        </div>
+        <p class="cb-help-text">Document upload/storage is a stubbed integration point in this build (see README).</p>
+    </div>
+
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Back to list</a>
+        <button type="submit" class="btn btn-cb-outline">Save Draft</button>
+    </div>
+</form>
+
+@if (Model.Status == "Draft")
+{
+    <form asp-action="Submit" method="post" class="d-inline">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-cb-gold mt-2">Submit for KYC</button>
+    </form>
+}

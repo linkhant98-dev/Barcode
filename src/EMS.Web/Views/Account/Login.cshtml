@@ -1,0 +1,88 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+<div class="d-flex" style="height:100vh;overflow:hidden;">
+    <div class="cb-login-aside d-none d-lg-flex text-white" style="flex:0 0 44%;padding:40px 56px;">
+        <div class="cb-login-watermark"><partial name="_BrandLogo" /></div>
+        <div class="cb-login-hero-content">
+            <span class="cb-logo-mark cb-logo-mark--lg"><partial name="_BrandLogo" /></span>
+            <div class="cb-wordmark" style="font-size:18px;">C&nbsp;B&nbsp;BANK</div>
+            <div class="cb-hero-rule" style="margin:10px 0 12px;"></div>
+            <span class="cb-eyebrow">Investor Relations Platform</span>
+            <h1 class="fw-bold" style="font-size:25px;color:#fff;margin-top:10px;">Equity Management System</h1>
+            <p style="max-width:340px;opacity:.9;font-size:13.5px;margin-top:6px;">Secure shareholder and equity management for CB Bank Investor Relations.</p>
+        </div>
+        <p class="cb-login-copyright small opacity-75 mb-0">&copy; @DateTime.UtcNow.Year CB Bank. Internal use only. Developed by Sunfix.</p>
+    </div>
+
+    <div class="cb-login-main d-flex flex-column justify-content-center flex-fill p-4 p-md-5">
+        <div class="mx-auto" style="max-width:420px;width:100%;">
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <span class="cb-logo-mark"><partial name="_BrandLogo" /></span>
+            <strong>Equity Management System</strong>
+            <span class="cb-env-badge ms-2">@(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development")</span>
+        </div>
+
+        <h2 class="h3 mb-3">Sign in</h2>
+
+        <partial name="_ValidationSummary" />
+
+        <form asp-controller="Account" asp-action="Login" method="post" novalidate>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="UserName" class="cb-form-label cb-required"></label>
+                <input asp-for="UserName" class="form-control" autocomplete="username" autofocus />
+                <span asp-validation-for="UserName" class="cb-field-error"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="cb-form-label cb-required"></label>
+                <input asp-for="Password" class="form-control" autocomplete="current-password" id="cb-password" />
+                <span asp-validation-for="Password" class="cb-field-error"></span>
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" id="cb-show-password" onclick="document.getElementById('cb-password').type = this.checked ? 'text' : 'password';" />
+                    <label class="form-check-label small" for="cb-show-password">Show password</label>
+                </div>
+                <div class="small text-secondary-cb mt-1" id="cb-capslock-warning" style="display:none;">
+                    <i class="bi bi-exclamation-triangle"></i> Caps Lock is on.
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <button type="submit" class="btn btn-cb-primary w-100 mb-3">Sign in</button>
+
+            <div class="d-flex justify-content-between small">
+                <a href="#">Forgot password</a>
+                <a href="#">Help</a>
+            </div>
+        </form>
+
+        <a class="btn btn-cb-outline w-100 mt-3" asp-controller="Verify" asp-action="Lookup">
+            <i class="bi bi-search"></i> Verify a certificate
+        </a>
+
+        <p class="small text-secondary-cb mt-4">
+            This system is for authorized CB Bank personnel only. All activity is logged and monitored.
+        </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('cb-password')?.addEventListener('keyup', function (e) {
+            var warning = document.getElementById('cb-capslock-warning');
+            if (typeof e.getModifierState === 'function') {
+                warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+            }
+        });
+    </script>
+}

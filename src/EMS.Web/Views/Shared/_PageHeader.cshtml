@@ -1,0 +1,32 @@
+@model PageHeaderViewModel
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">
+            @Model.Title
+            @if (!string.IsNullOrEmpty(Model.StatusBadge))
+            {
+                <partial name="_StatusBadge" model="@Model.StatusBadge" />
+            }
+        </h1>
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="text-secondary-cb mb-0">@Model.Description</p>
+        }
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        @foreach (var action in Model.SecondaryActions)
+        {
+            <a class="btn btn-cb-outline btn-sm" href="@action.Url">
+                @if (action.Icon is not null) { <i class="bi @action.Icon"></i> }
+                @action.Text
+            </a>
+        }
+        @if (Model.PrimaryAction is not null)
+        {
+            <a class="btn @(Model.PrimaryAction.Style == "gold" ? "btn-cb-gold" : "btn-cb-primary") btn-sm" href="@Model.PrimaryAction.Url">
+                @if (Model.PrimaryAction.Icon is not null) { <i class="bi @Model.PrimaryAction.Icon"></i> }
+                @Model.PrimaryAction.Text
+            </a>
+        }
+    </div>
+</div>

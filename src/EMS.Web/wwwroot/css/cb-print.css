@@ -1,0 +1,17 @@
+/* Print/PDF theme (section 24). */
+@media print {
+  .cb-header, .cb-sidebar, .cb-footer, .cb-page-actions, .no-print {
+    display: none !important;
+  }
+  .cb-main {
+    padding: 0;
+    max-width: none;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .cb-table thead {
+    display: table-header-group;
+  }
+}

@@ -1,0 +1,49 @@
+@model CreateApprovalMatrixRuleViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "New Approval Matrix Rule" };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:640px;">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="Module" class="cb-form-label cb-required"></label>
+            <select asp-for="Module" class="form-select">
+                <option value="SA">Shareholder Application</option>
+                <option value="IS">Issue Shares</option>
+                <option value="TS">Transfer Shares</option>
+                <option value="BS">Bonus Shares</option>
+                <option value="DS">Dividend Shares</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Sequence" class="cb-form-label cb-required"></label>
+            <input asp-for="Sequence" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EffectiveFrom" class="cb-form-label cb-required"></label>
+            <input asp-for="EffectiveFrom" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="StepName" class="cb-form-label cb-required"></label>
+            <input asp-for="StepName" class="form-control" placeholder="e.g. DGM" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ApproverRole" class="cb-form-label cb-required"></label>
+            <select asp-for="ApproverRole" class="form-select" asp-items="ViewBag.Roles">
+                <option value="">-- select --</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check mt-4">
+                <input asp-for="IsMandatory" class="form-check-input" />
+                <label asp-for="IsMandatory" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Add Rule</button>
+    </div>
+</form>

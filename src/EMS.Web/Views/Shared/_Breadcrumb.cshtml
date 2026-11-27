@@ -1,0 +1,22 @@
+@{
+    var items = ViewData["Breadcrumb"] as List<(string Text, string? Url)>;
+}
+@if (items is { Count: > 0 })
+{
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb mb-0" style="font-size:13px;">
+            @for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                if (i == items.Count - 1 || item.Url is null)
+                {
+                    <li class="breadcrumb-item active text-secondary-cb" aria-current="page">@item.Text</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item"><a href="@item.Url">@item.Text</a></li>
+                }
+            }
+        </ol>
+    </nav>
+}

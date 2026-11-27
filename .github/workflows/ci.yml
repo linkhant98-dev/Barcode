@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [CB-EMS-MVC, main]
+  pull_request:
+    branches: [CB-EMS-MVC, main]
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore EMS.sln
+
+      - name: Verify formatting
+        run: dotnet format EMS.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build EMS.sln --no-restore --configuration Release
+
+      - name: Test with coverage
+        run: >
+          dotnet test EMS.sln --no-build --configuration Release
+          --logger "trx;LogFileName=test-results.trx"
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Build coverage report
+        run: >
+          reportgenerator
+          -reports:./TestResults/**/coverage.cobertura.xml
+          -targetdir:./TestResults/CoverageReport
+          -reporttypes:"Html;TextSummary"
+
+      # Floor, not a target: measured line coverage the day this gate was last raised was ~17.4% (heavily
+      # diluted by 0%-covered EF migrations and generated Razor views). This only catches an outright
+      # regression - raise it as real coverage grows, don't treat it as a quality bar on its own.
+      - name: Enforce minimum line coverage
+        run: |
+          summary="./TestResults/CoverageReport/Summary.txt"
+          cat "$summary"
+          line=$(grep -m1 "Line coverage:" "$summary" | grep -oP '[\d.]+(?=%)')
+          echo "Line coverage: ${line}%"
+          threshold=15
+          below=$(awk -v a="$line" -v b="$threshold" 'BEGIN { print (a < b) ? 1 : 0 }')
+          if [ "$below" = "1" ]; then
+            echo "::error::Line coverage ${line}% is below the ${threshold}% minimum."
+            exit 1
+          fi
+
+      - name: Publish test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./TestResults/*.trx
+
+      - name: Publish coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: ./TestResults/CoverageReport
+
+      # Blocking: the previously-known-vulnerable transitive packages (Azure.Identity, Microsoft.Identity.Client,
+      # SQLitePCLRaw.*, System.Formats.Asn1, System.IO.Packaging, System.Net.Http, System.Text.RegularExpressions)
+      # are now pinned to patched versions directly in the csproj files, so a clean run here is the normal case -
+      # a failure means a new advisory (or a dependency bump that reintroduced an old one) needs triage.
+      - name: Scan for vulnerable NuGet packages
+        run: dotnet list "${{ github.workspace }}/EMS.sln" package --vulnerable --include-transitive | tee vulnerable-packages.txt
+      - name: Fail if vulnerable packages were found
+        run: |
+          if grep -q "has the following vulnerable packages" vulnerable-packages.txt; then
+            echo "::error::Vulnerable NuGet packages detected - see the previous step's log."
+            exit 1
+          fi
+
+  docker-publish:
+    name: Build and push container image
+    needs: build-and-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute a lowercase image name
+        id: image
+        run: echo "name=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:latest

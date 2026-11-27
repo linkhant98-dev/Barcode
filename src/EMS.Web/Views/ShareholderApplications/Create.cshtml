@@ -1,0 +1,30 @@
+@model CreateApplicationViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "New Shareholder Application", Description = "Choose the applicant type to begin." };
+}
+<partial name="_PageHeader" model="header" />
+
+<partial name="_ValidationSummary" />
+
+<div class="cb-card" style="max-width:640px;">
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="Type" class="cb-form-label cb-required"></label>
+            <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<EMS.Domain.Common.ApplicantType>()"></select>
+            <span asp-validation-for="Type" class="cb-field-error"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="ShareholderGroupId" class="cb-form-label cb-required"></label>
+            <select asp-for="ShareholderGroupId" class="form-select" asp-items="@(new SelectList(ViewBag.Groups, "Id", "NameEn"))">
+                <option value="">-- select --</option>
+            </select>
+            <span asp-validation-for="ShareholderGroupId" class="cb-field-error"></span>
+        </div>
+        <div class="cb-page-actions">
+            <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+            <button type="submit" class="btn btn-cb-primary">Continue</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

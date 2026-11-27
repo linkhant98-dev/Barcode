@@ -1,0 +1,27 @@
+@model string
+@{
+    var key = Model?.Replace(" ", "").Replace("_", "").ToLowerInvariant() ?? "draft";
+    var (icon, label) = key switch
+    {
+        "draft" => ("bi-pencil", "Draft"),
+        "submitted" => ("bi-send", "Submitted"),
+        "kycpending" => ("bi-clock", "KYC Pending"),
+        "kycapproved" => ("bi-check-circle", "KYC Approved"),
+        "kycrejected" => ("bi-x-circle", "KYC Rejected"),
+        "pendingapproval" => ("bi-clock", "Pending Approval"),
+        "reverted" => ("bi-arrow-return-left", "Reverted"),
+        "approved" => ("bi-check-circle", "Approved"),
+        "rejected" => ("bi-x-circle", "Rejected"),
+        "processing" => ("bi-hourglass-split", "Processing"),
+        "postingerror" => ("bi-exclamation-triangle", "Posting Error"),
+        "completed" => ("bi-check-circle-fill", "Completed"),
+        "cancelled" => ("bi-slash-circle", "Cancelled"),
+        "archived" => ("bi-archive", "Archived"),
+        "active" => ("bi-check-circle", "Active"),
+        "suspended" => ("bi-pause-circle", "Suspended"),
+        "closed" => ("bi-x-circle", "Closed"),
+        "pending" => ("bi-clock", "Pending"),
+        _ => ("bi-info-circle", Model ?? "Unknown")
+    };
+}
+<span class="cb-badge cb-badge-@key"><i class="bi @icon"></i> @label</span>

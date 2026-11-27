@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="ShareholderApplications" xml:space="preserve"><value>Applications</value></data>
+  <data name="RegisteredShareholders" xml:space="preserve"><value>Registered Shareholders</value></data>
+  <data name="KycQueue" xml:space="preserve"><value>KYC Queue</value></data>
+  <data name="Certificates" xml:space="preserve"><value>Certificates</value></data>
+  <data name="IssueShares" xml:space="preserve"><value>Issue Shares</value></data>
+  <data name="TransferShares" xml:space="preserve"><value>Transfer Shares</value></data>
+  <data name="BonusShares" xml:space="preserve"><value>Bonus Shares</value></data>
+  <data name="Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="PendingApprovals" xml:space="preserve"><value>My Pending Approvals</value></data>
+  <data name="SubmittedByMe" xml:space="preserve"><value>Submitted by Me</value></data>
+  <data name="Delegations" xml:space="preserve"><value>Delegations</value></data>
+  <data name="Reports" xml:space="preserve"><value>Standard Reports</value></data>
+  <data name="UsersAndRoles" xml:space="preserve"><value>Users and Roles</value></data>
+  <data name="ApprovalMatrix" xml:space="preserve"><value>Approval Matrix</value></data>
+  <data name="Permissions" xml:space="preserve"><value>Permissions</value></data>
+  <data name="MasterData" xml:space="preserve"><value>Master Data</value></data>
+  <data name="AuditLog" xml:space="preserve"><value>Audit Log</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Revert" xml:space="preserve"><value>Revert</value></data>
+  <data name="SubmitDecision" xml:space="preserve"><value>Submit Decision</value></data>
+  <data name="Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="Comment" xml:space="preserve"><value>Comment</value></data>
+  <data name="View" xml:space="preserve"><value>View</value></data>
+  <data name="ExportExcel" xml:space="preserve"><value>Export Excel</value></data>
+  <data name="ExportPdf" xml:space="preserve"><value>Export PDF</value></data>
+  <data name="Print" xml:space="preserve"><value>Print</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="RegisteredShareholdersKpi" xml:space="preserve"><value>Registered shareholders</value></data>
+  <data name="TotalShares" xml:space="preserve"><value>Total shares</value></data>
+  <data name="PaidUpCapital" xml:space="preserve"><value>Paid-up capital</value></data>
+  <data name="PendingApprovalsKpi" xml:space="preserve"><value>Pending approvals</value></data>
+  <data name="DividendProvision" xml:space="preserve"><value>Dividend provision</value></data>
+  <data name="MyPendingApprovals" xml:space="preserve"><value>My pending approvals</value></data>
+  <data name="RecentTransactions" xml:space="preserve"><value>Recent transactions</value></data>
+  <data name="PendingKyc" xml:space="preserve"><value>Pending KYC</value></data>
+  <data name="DataQualityExceptions" xml:space="preserve"><value>Data quality exceptions</value></data>
+  <data name="NewApplication" xml:space="preserve"><value>New Application</value></data>
+  <data name="NewIssue" xml:space="preserve"><value>New Issue</value></data>
+  <data name="NewTransfer" xml:space="preserve"><value>New Transfer</value></data>
+  <data name="Notifications" xml:space="preserve"><value>Notifications</value></data>
+  <data name="MarkAllRead" xml:space="preserve"><value>Mark all read</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="DownloadPdf" xml:space="preserve"><value>Download PDF</value></data>
+  <data name="CertificatesOnIssueKpi" xml:space="preserve"><value>Certificates on issue</value></data>
+  <data name="ApplicationsInProgressKpi" xml:space="preserve"><value>Applications in progress</value></data>
+</root>

@@ -1,0 +1,39 @@
+@model List<(EMS.Infrastructure.Identity.ApplicationUser User, IList<string> Roles)>
+@{
+    var header = new PageHeaderViewModel
+    {
+        Title = "Users and Roles",
+        Description = $"{Model.Count} user(s)",
+        PrimaryAction = new PageAction("New User", Url.Action("Create")!, "primary", "bi-person-plus")
+    };
+}
+<partial name="_PageHeader" model="header" />
+@if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+
+<div class="cb-table-card">
+    <div class="cb-table-responsive">
+        <table class="cb-table">
+            <thead><tr><th>Username</th><th>Full name</th><th>Email</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var (user, roles) in Model)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>@string.Join(", ", roles)</td>
+                        <td><partial name="_StatusBadge" model="@user.Status.ToString()" /></td>
+                        <td>@(user.LastLoginUtc?.ToString("dd MMM yyyy HH:mm") ?? "Never")</td>
+                        <td>
+                            <form asp-action="ToggleStatus" asp-route-id="@user.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-cb-outline btn-sm">
+                                    @(user.Status == EMS.Domain.Common.UserStatus.Active ? "Disable" : "Enable")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

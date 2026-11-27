@@ -1,0 +1,100 @@
+@model CreateTransferViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "Transfer Shares", Description = "Trade or non-trade transfer between shareholders." };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:860px;">
+    <h2 class="h6">Parties</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="FromShareholderId" class="cb-form-label cb-required"></label>
+            <select asp-for="FromShareholderId" class="form-select" asp-items="@(new SelectList(ViewBag.Shareholders, "Id", "Label"))">
+                <option value="">-- select --</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ToShareholderId" class="cb-form-label cb-required"></label>
+            <select asp-for="ToShareholderId" class="form-select" asp-items="@(new SelectList(ViewBag.Shareholders, "Id", "Label"))">
+                <option value="">-- select --</option>
+            </select>
+        </div>
+    </div>
+
+    <h2 class="h6">Transfer details</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <label asp-for="TransferDate" class="cb-form-label cb-required"></label>
+            <input asp-for="TransferDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ShareClassId" class="cb-form-label cb-required"></label>
+            <select asp-for="ShareClassId" class="form-select" asp-items="@(new SelectList(ViewBag.ShareClasses, "Id", "NameEn"))"></select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Quantity" class="cb-form-label cb-required"></label>
+            <input asp-for="Quantity" class="form-control numeric" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="TransferType" class="cb-form-label cb-required"></label>
+            <select asp-for="TransferType" class="form-select" id="transferType" asp-items="Html.GetEnumSelectList<TransferType>()"></select>
+        </div>
+    </div>
+
+    <div id="tradeFields">
+        <h2 class="h6">Trade value</h2>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <label asp-for="CapitalAmount" class="cb-form-label"></label>
+                <input asp-for="CapitalAmount" class="form-control numeric" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="PremiumAmount" class="cb-form-label"></label>
+                <input asp-for="PremiumAmount" class="form-control numeric" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="CashAmount" class="cb-form-label"></label>
+                <input asp-for="CashAmount" class="form-control numeric" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="ChequeAmount" class="cb-form-label"></label>
+                <input asp-for="ChequeAmount" class="form-control numeric" />
+            </div>
+        </div>
+    </div>
+
+    <div id="nonTradeFields" style="display:none;">
+        <h2 class="h6">Non-trade reason</h2>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label asp-for="NonTradeReason" class="cb-form-label"></label>
+                <select asp-for="NonTradeReason" class="form-select" asp-items="Html.GetEnumSelectList<NonTradeReason>()">
+                    <option value="">-- select --</option>
+                </select>
+            </div>
+            <div class="col-md-8">
+                <label asp-for="NonTradeReasonDetail" class="cb-form-label"></label>
+                <input asp-for="NonTradeReasonDetail" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Save Draft</button>
+    </div>
+</form>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+    function toggleTransferFields() {
+        var isTrade = document.getElementById('transferType').value === '@((int)TransferType.Trade)';
+        document.getElementById('tradeFields').style.display = isTrade ? '' : 'none';
+        document.getElementById('nonTradeFields').style.display = isTrade ? 'none' : '';
+    }
+    document.getElementById('transferType').addEventListener('change', toggleTransferFields);
+    toggleTransferFields();
+</script>
+}

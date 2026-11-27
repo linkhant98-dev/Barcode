@@ -1,0 +1,41 @@
+@model CreateBonusEventViewModel
+@{
+    var header = new PageHeaderViewModel { Title = "New Bonus Event", Description = "Define financial year, ratio and cash rate." };
+}
+<partial name="_PageHeader" model="header" />
+<partial name="_ValidationSummary" />
+
+<form asp-action="Create" method="post" class="cb-card" style="max-width:640px;">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="FinancialYear" class="cb-form-label cb-required"></label>
+            <input asp-for="FinancialYear" class="form-control" placeholder="2025-2026" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="RecordDate" class="cb-form-label cb-required"></label>
+            <input asp-for="RecordDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="BonusNumerator" class="cb-form-label cb-required"></label>
+            <input asp-for="BonusNumerator" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="BonusDenominator" class="cb-form-label cb-required"></label>
+            <input asp-for="BonusDenominator" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CashBonusRatePerRemainderShare" class="cb-form-label"></label>
+            <input asp-for="CashBonusRatePerRemainderShare" class="form-control numeric" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ShareClassId" class="cb-form-label cb-required"></label>
+            <select asp-for="ShareClassId" class="form-select" asp-items="@(new SelectList(ViewBag.ShareClasses, "Id", "NameEn"))"></select>
+        </div>
+    </div>
+    <div class="cb-page-actions">
+        <a class="btn btn-cb-outline" asp-action="Index">Cancel</a>
+        <button type="submit" class="btn btn-cb-primary">Create Event</button>
+    </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

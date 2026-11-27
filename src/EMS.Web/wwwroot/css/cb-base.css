@@ -1,0 +1,57 @@
+/* Base typography and accessibility defaults (section 2.6, 3.3, 19). */
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: 16px;
+  color: var(--text-primary);
+  background: var(--surface-page);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+a {
+  color: var(--cb-blue-600);
+}
+
+.text-secondary-cb {
+  color: var(--text-secondary) !important;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* 19 - visible focus indicator on every interactive control. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.btn:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--cb-blue-600);
+  outline-offset: 2px;
+}
+
+.cb-rainbow-line {
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--cb-red-500) 0 25%,
+    var(--cb-gold-500) 25% 50%,
+    var(--cb-green-500) 50% 75%,
+    var(--cb-rainbow-blue) 75% 100%
+  );
+}
+
+/* Minimum 44x44 touch targets (2.6). */
+.btn, .form-control, .form-select {
+  min-height: 44px;
+}
